@@ -4,12 +4,20 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test src/**/*.test.ts"
   },
   "exports": {
     ".": "./src/index.ts"
   },
+  "dependencies": {
+    "@erdflow/core": "workspace:*",
+    "elkjs": "^0.11.0"
+  },
   "devDependencies": {
+    "@erdflow/parser-dbml": "workspace:*",
+    "@types/node": "^24",
+    "tsx": "^4.20.6",
     "typescript": "~6"
   }
 }

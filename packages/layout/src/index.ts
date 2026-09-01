@@ -1,2 +1,16 @@
-/** ELK.js auto-layout — positioning, hierarchy, and large-graph arrangement. */
-export type LayoutPackage = "@erdflow/layout";
+export { layoutSchema } from "./layout.js";
+export { schemaTopologyHash } from "./hash.js";
+export {
+  clearLayoutCache,
+  createLayoutCache,
+  defaultLayoutCache,
+  LayoutCache,
+} from "./cache.js";
+export type {
+  LayoutDirection,
+  LayoutEdge,
+  LayoutNode,
+  LayoutOptions,
+  LayoutPoint,
+  LayoutResult,
+} from "./types.js";

@@ -135,7 +135,23 @@ importers:
         version: 6.0.3
 
   packages/layout:
+    dependencies:
+      '@erdflow/core':
+        specifier: workspace:*
+        version: link:../core
+      elkjs:
+        specifier: ^0.11.0
+        version: 0.11.1
     devDependencies:
+      '@erdflow/parser-dbml':
+        specifier: workspace:*
+        version: link:../parser-dbml
+      '@types/node':
+        specifier: ^24
+        version: 24.12.4
+      tsx:
+        specifier: ^4.20.6
+        version: 4.23.13
       typescript:
         specifier: ~6
         version: 6.0.3
@@ -2094,6 +2110,9 @@ packages:
 
   electron-to-chromium@1.5.362:
     resolution: {integrity: sha512-PUY2DrLvkjkUuWqq+KPL2iWshrJsZOcIojzRQ7eXFacc9dWga7MGMJAa15VbiejSZB1PAXaRLAiKgruHP8LB1w==}
+
+  elkjs@0.11.1:
+    resolution: {integrity: sha512-zxxR9k+rx5ktMwT/FwyLdPCrq7xN6e4VGGHH8hA01vVYKjTFik7nHOxBnAYtrgYUB1RpAiLvA1/U2YraWxyKKg==}
 
   emoji-regex@10.6.0:
     resolution: {integrity: sha512-toUI84YS5YmxW219erniWD0CIVOo46xGKColeNQRgOzDorgBi1v4D71/OFzgD9GO2UGKIv1C3Sp8DAn0+j5w7A==}
@@ -5080,6 +5099,8 @@ snapshots:
       fast-check: 3.23.2
 
   electron-to-chromium@1.5.362: {}
+
+  elkjs@0.11.1: {}
 
   emoji-regex@10.6.0: {}
 
