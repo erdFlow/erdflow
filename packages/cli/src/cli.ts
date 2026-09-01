@@ -1,7 +1,6 @@
 import { runCli } from "./run.js";
 
 runCli().catch((error: unknown) => {
-  const message = error instanceof Error ? error.message : String(error);
-  console.error(message);
+  console.error(error instanceof Error ? error.message : String(error));
   process.exit(1);
 });

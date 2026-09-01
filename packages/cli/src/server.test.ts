@@ -1,4 +1,4 @@
-import { mkdtemp, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readdir, readFile, writeFile } from "node:fs/promises";
 import { join, dirname } from "node:path";
 import { tmpdir } from "node:os";
 import { fileURLToPath } from "node:url";
@@ -60,6 +60,62 @@ test("createServer serves /api/schema and accepts websocket clients", async () =
   const parsed = JSON.parse(message) as { type: string; schema?: { entities: unknown[] } };
   assert.equal(parsed.type, "schema");
   assert.equal(parsed.schema?.entities.length, 1);
+
+  await server.close();
+});
+
+test("built index.html serves React visualizer bundle, not legacy app.js", async () => {
+  const indexHtml = await readFile(join(fixturePublicDir, "index.html"), "utf8");
+
+  assert.match(indexHtml, /\/assets\/index-[^"]+\.js/);
+  assert.doesNotMatch(indexHtml, /app\.js/);
+  assert.match(indexHtml, /id="root"/);
+});
+
+test("createServer serves woff2 fonts with correct content-type", async () => {
+  const publicDir = await mkdtemp(join(tmpdir(), "erdflow-public-"));
+  const assetsDir = join(publicDir, "assets");
+  await mkdir(assetsDir, { recursive: true });
+  await writeFile(join(publicDir, "index.html"), "<html></html>");
+  await writeFile(join(assetsDir, "font.woff2"), "fake-font");
+
+  const server = await createServer({
+    port: 0,
+    publicDir,
+    host: "127.0.0.1",
+  });
+
+  const response = await fetch(`${server.url}assets/font.woff2`);
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get("content-type"), "font/woff2");
+
+  await server.close();
+});
+
+test("createServer serves built woff2 assets from public directory", async () => {
+  const assetsDir = join(fixturePublicDir, "assets");
+  let fontFile: string | undefined;
+
+  try {
+    const files = await readdir(assetsDir);
+    fontFile = files.find((file) => file.endsWith(".woff2"));
+  } catch {
+    fontFile = undefined;
+  }
+
+  if (!fontFile) {
+    return;
+  }
+
+  const server = await createServer({
+    port: 0,
+    publicDir: fixturePublicDir,
+    host: "127.0.0.1",
+  });
+
+  const response = await fetch(`${server.url}assets/${fontFile}`);
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get("content-type"), "font/woff2");
 
   await server.close();
 });

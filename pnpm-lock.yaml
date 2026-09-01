@@ -115,6 +115,9 @@ importers:
         specifier: ^8.19.0
         version: 8.21.3
     devDependencies:
+      '@erdflow/layout':
+        specifier: workspace:*
+        version: link:../layout
       '@types/node':
         specifier: ^24
         version: 24.12.4

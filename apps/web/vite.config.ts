@@ -17,4 +17,13 @@ export default defineConfig({
     emptyOutDir: true,
   },
   base: "/",
+  server: {
+    proxy: {
+      "/api": "http://127.0.0.1:4317",
+      "/ws": {
+        target: "ws://127.0.0.1:4317",
+        ws: true,
+      },
+    },
+  },
 })
