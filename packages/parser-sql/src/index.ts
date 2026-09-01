@@ -1,2 +1,6 @@
-/** Schema adapter for sql — detect, parse, and emit Universal Schema. */
-export type ParserPackage = "@erdflow/parser-sql";
+export { sqlAdapter } from "./adapter.js";
+export { detectSqlProject, findSqlFiles } from "./detect.js";
+export { inferSqlDialect } from "./infer-dialect.js";
+export { parsePostgresSql } from "./parse-postgres.js";
+export { parseMysqlSql } from "./parse-mysql.js";
+export { parseSqliteSql } from "./parse-sqlite.js";

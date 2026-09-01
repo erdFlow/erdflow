@@ -1,2 +1,3 @@
-/** Schema adapter for dbml — detect, parse, and emit Universal Schema. */
-export type ParserPackage = "@erdflow/parser-dbml";
+export { dbmlAdapter } from "./adapter.js";
+export { mapDbmlDatabase } from "./map-database.js";
+export { detectDbmlProject } from "./detect.js";
