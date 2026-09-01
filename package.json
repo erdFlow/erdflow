@@ -5,6 +5,7 @@
   "scripts": {
     "build": "turbo build",
     "dev": "turbo dev",
+    "erdflow": "pnpm --filter @erdflow/cli build && node packages/cli/dist/cli.js",
     "lint": "turbo lint",
     "format": "turbo format",
     "typecheck": "turbo typecheck"

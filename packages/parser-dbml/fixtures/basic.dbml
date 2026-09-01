@@ -1,0 +1,23 @@
+enum order_status {
+  pending
+  paid
+  cancelled
+}
+
+Table users {
+  id int [pk, not null]
+  email varchar [unique, not null, note: 'Primary contact']
+  status order_status
+
+  indexes {
+    email [name: 'idx_users_email']
+  }
+
+  Note: 'Application users'
+}
+
+Table orders {
+  id int [pk]
+  user_id int [not null, ref: > users.id]
+  created_at timestamp
+}

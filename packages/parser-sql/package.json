@@ -4,12 +4,20 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "node --test src/**/*.test.ts"
   },
   "exports": {
     ".": "./src/index.ts"
   },
+  "dependencies": {
+    "@dbml/core": "^10.1.1",
+    "@erdflow/core": "workspace:*",
+    "@erdflow/parser-dbml": "workspace:*",
+    "node-sql-parser": "^5.3.12"
+  },
   "devDependencies": {
+    "@types/node": "^24",
     "typescript": "~6"
   }
 }

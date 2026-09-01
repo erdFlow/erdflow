@@ -1,2 +1,4 @@
 /** Universal schema model — source of truth for all parsers and the visualizer. */
-export type SchemaPackage = "@erdflow/core";
+export * from "./schema/index.js";
+export * from "./adapter/index.js";
+export * from "./validation/index.js";

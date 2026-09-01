@@ -3,13 +3,23 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "bin": {
+    "erdflow": "./dist/cli.js"
+  },
   "scripts": {
+    "build": "tsup",
     "typecheck": "tsc --noEmit"
   },
   "exports": {
     ".": "./src/index.ts"
   },
+  "dependencies": {
+    "@erdflow/core": "workspace:*",
+    "commander": "^14.0.3"
+  },
   "devDependencies": {
+    "@types/node": "^24",
+    "tsup": "^8.5.0",
     "typescript": "~6"
   }
 }
