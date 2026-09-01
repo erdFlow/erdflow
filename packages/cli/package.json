@@ -7,18 +7,28 @@
     "erdflow": "./dist/cli.js"
   },
   "scripts": {
-    "build": "tsup",
-    "typecheck": "tsc --noEmit"
+    "build": "tsup && rm -rf dist/public && cp -R public dist/public",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test src/**/*.test.ts"
   },
   "exports": {
     ".": "./src/index.ts"
   },
   "dependencies": {
     "@erdflow/core": "workspace:*",
-    "commander": "^14.0.3"
+    "@erdflow/parser-dbml": "workspace:*",
+    "@erdflow/parser-prisma": "workspace:*",
+    "@erdflow/parser-sql": "workspace:*",
+    "@prisma/internals": "^6.19.0",
+    "chokidar": "^4.0.3",
+    "commander": "^14.0.3",
+    "open": "^10.2.0",
+    "ws": "^8.19.0"
   },
   "devDependencies": {
     "@types/node": "^24",
+    "@types/ws": "^8.18.1",
+    "tsx": "^4.20.6",
     "tsup": "^8.5.0",
     "typescript": "~6"
   }

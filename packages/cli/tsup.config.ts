@@ -11,4 +11,6 @@ export default defineConfig({
   },
   splitting: false,
   sourcemap: true,
+  noExternal: [/^@erdflow\//, /^@dbml\//, /^node-sql-parser/],
+  external: [/^@prisma\//],
 });

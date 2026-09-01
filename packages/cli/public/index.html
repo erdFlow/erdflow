@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>erdflow</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="container">
+      <header>
+        <h1>erdflow</h1>
+        <p id="status" class="status">Connecting…</p>
+      </header>
+
+      <section id="summary" class="summary hidden">
+        <h2>Schema summary</h2>
+        <dl>
+          <div><dt>Entities</dt><dd id="entity-count">0</dd></div>
+          <div><dt>Enums</dt><dd id="enum-count">0</dd></div>
+          <div><dt>Relations</dt><dd id="relation-count">0</dd></div>
+          <div><dt>Indexes</dt><dd id="index-count">0</dd></div>
+        </dl>
+      </section>
+
+      <section id="error" class="error hidden">
+        <h2>Schema error</h2>
+        <pre id="error-message"></pre>
+      </section>
+
+      <details id="schema-details" class="schema-details hidden">
+        <summary>Raw schema JSON</summary>
+        <pre id="schema-json"></pre>
+      </details>
+    </main>
+    <script src="/app.js"></script>
+  </body>
+</html>

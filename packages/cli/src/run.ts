@@ -1,4 +1,16 @@
+import { cwd } from "node:process";
 import { Command } from "commander";
+import { loadSchema } from "./parse-source.js";
+import { openBrowser } from "./open-browser.js";
+import {
+  printDetectionSummary,
+  printParseError,
+  printWatchEnabled,
+} from "./output.js";
+import { resolvePublicDir } from "./paths.js";
+import { readPackageJsonHints, resolveSchemaSource } from "./scan.js";
+import { createServer } from "./server.js";
+import { watchSchemaSource } from "./watch.js";
 
 export interface CliOptions {
   port: string;
@@ -8,7 +20,7 @@ export interface CliOptions {
   dbml?: string;
 }
 
-export function runCli(argv: string[] = process.argv): void {
+export async function runCli(argv: string[] = process.argv): Promise<void> {
   const program = new Command();
 
   program
@@ -21,26 +33,64 @@ export function runCli(argv: string[] = process.argv): void {
     .option("--no-watch", "Disable file watching")
     .option("--prisma <path>", "Explicit Prisma schema file path")
     .option("--dbml <path>", "Explicit DBML schema file path")
-    .action((options: CliOptions) => {
-      const stubOptions = [
-        options.prisma ? `--prisma ${options.prisma}` : null,
-        options.dbml ? `--dbml ${options.dbml}` : null,
-        `--port ${options.port}`,
-        options.open === false ? "--no-open" : null,
-        options.watch === false ? "--no-watch" : null,
-      ].filter(Boolean);
-
-      console.log("erdflow is not fully implemented yet.");
-      console.log("");
-      console.log("Coming soon:");
-      console.log("  detect schema -> parse -> serve localhost -> open browser");
-      console.log("");
-      if (stubOptions.length > 0) {
-        console.log("Parsed options:", stubOptions.join(" "));
-      } else {
-        console.log("Run with --help to see available flags.");
+    .action(async (options: CliOptions) => {
+      const rootDir = cwd();
+      const port = Number(options.port);
+      if (!Number.isInteger(port) || port < 1 || port > 65535) {
+        throw new Error(`Invalid port: ${options.port}`);
       }
+
+      const source = await resolveSchemaSource(rootDir, {
+        prisma: options.prisma,
+        dbml: options.dbml,
+      });
+      const packageHints = await readPackageJsonHints(rootDir);
+      const schema = await loadSchema(source);
+      const publicDir = resolvePublicDir(import.meta.url);
+      const server = await createServer({ port, publicDir });
+
+      server.broadcastSchema(schema);
+      printDetectionSummary(rootDir, source, schema, server.url, packageHints);
+
+      let watcher: { close: () => Promise<void> } | undefined;
+      if (options.watch !== false) {
+        printWatchEnabled();
+        watcher = watchSchemaSource(source.watchPaths, async () => {
+          try {
+            const updatedSchema = await loadSchema(source);
+            server.broadcastSchema(updatedSchema);
+            console.log("Schema updated.");
+          } catch (error) {
+            const message =
+              error instanceof Error ? error.message : String(error);
+            printParseError(message);
+            server.broadcastError(message);
+          }
+        });
+      }
+
+      if (options.open !== false) {
+        await openBrowser(server.url);
+      }
+
+      const shutdown = async () => {
+        console.log("\nShutting down...");
+        await watcher?.close();
+        await server.close();
+        process.exit(0);
+      };
+
+      process.on("SIGINT", () => {
+        void shutdown();
+      });
+      process.on("SIGTERM", () => {
+        void shutdown();
+      });
+
+      await new Promise<void>(() => {
+        // Keep process alive while server is running.
+      });
     });
 
-  program.parse(argv);
+  await program.parseAsync(argv);
 }
