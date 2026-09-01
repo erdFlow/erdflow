@@ -84,19 +84,21 @@ When a parse error occurs during watch, the CLI prints the error and the browser
 ```bash
 pnpm install
 pnpm dev              # Vite dev shell at apps/web (see below)
-pnpm erdflow          # Run CLI from workspace root
 pnpm typecheck
 pnpm build
 ```
 
+**Full guide:** [docs/local-development.md](./docs/local-development.md) — local parsing, two-terminal UI dev, fixtures, and troubleshooting.
+
 ### Visualizer dev (two terminals)
 
-The Vite dev server proxies `/api` and `/ws` to the CLI server on port 4317.
+The Vite dev server proxies `/api` and `/ws` to the CLI server on port `4317`. **Both must be running** or the UI shows Disconnected.
 
-**Terminal 1** — start the CLI with a schema (no browser):
+**Terminal 1** — CLI with a schema (keep running):
 
 ```bash
-pnpm erdflow -- --no-open --dbml packages/parser-dbml/fixtures/basic.dbml
+pnpm --filter @erdflow/cli build
+node packages/cli/dist/cli.js --no-open --prisma packages/parser-prisma/fixtures/basic.prisma
 ```
 
 **Terminal 2** — hot-reload the visualizer UI:
@@ -105,7 +107,7 @@ pnpm erdflow -- --no-open --dbml packages/parser-dbml/fixtures/basic.dbml
 pnpm --filter web dev
 ```
 
-Open the Vite URL (usually `http://localhost:5173`). Schema loads from the CLI via proxy.
+Open **http://localhost:5173**. See [docs/local-development.md](./docs/local-development.md) for DBML/SQL fixtures, your own Prisma path, and troubleshooting.
 
 Build the CLI and visualizer bundle for production-style serving:
 
@@ -145,6 +147,7 @@ Open `http://127.0.0.1:4317` and confirm the diagram loads, pans, zooms, and sea
 apps/
   web/          # Dev UI shell (Vite + shadcn)
   docs/         # Documentation (stub)
+docs/           # Developer guides (local dev, parsing tests)
 packages/
   core/         # Universal Schema
   cli/          # CLI entry
