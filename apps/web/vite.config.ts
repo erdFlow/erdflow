@@ -9,6 +9,12 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      "@erdflow/web": path.resolve(__dirname, "../../packages/web/src/index.ts"),
     },
   },
+  build: {
+    outDir: "../../packages/cli/public",
+    emptyOutDir: true,
+  },
+  base: "/",
 })

@@ -1,5 +1,5 @@
 import ELK from "elkjs/lib/elk.bundled.js";
-import type { LayoutDirection, LayoutOptions } from "./types.js";
+import type { LayoutOptions } from "./types.js";
 
 type ElkInstance = InstanceType<typeof ELK>;
 

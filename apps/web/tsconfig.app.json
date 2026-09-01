@@ -23,6 +23,7 @@
     "noFallthroughCasesInSwitch": true,
     "paths": {
       "@/*": ["./src/*"],
+      "@erdflow/web": ["../../packages/web/src/index.ts"],
       "@workspace/ui/*": ["../../packages/ui/src/*"]
     }
   },

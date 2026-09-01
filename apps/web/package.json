@@ -12,6 +12,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@erdflow/web": "workspace:*",
     "@workspace/ui": "workspace:*",
     "lucide-react": "^1.38.0",
     "react": "^19.2.6",

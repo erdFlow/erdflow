@@ -1,2 +1,7 @@
-/** Browser visualizer UI — React canvas, diagram state, and interactions. */
-export type WebPackage = "@erdflow/web";
+export { ErdflowVisualizer } from "./components/ErdflowVisualizer.js";
+export { useDiagramStore } from "./store/diagram-store.js";
+export type {
+  CanvasControls,
+  ConnectionStatus,
+  DiagramState,
+} from "./store/diagram-store.js";

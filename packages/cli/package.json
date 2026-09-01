@@ -7,7 +7,7 @@
     "erdflow": "./dist/cli.js"
   },
   "scripts": {
-    "build": "tsup && rm -rf dist/public && cp -R public dist/public",
+    "build": "pnpm --filter web build && tsup && rm -rf dist/public && cp -R public dist/public",
     "typecheck": "tsc --noEmit",
     "test": "tsx --test src/**/*.test.ts"
   },
