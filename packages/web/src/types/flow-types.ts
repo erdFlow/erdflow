@@ -5,6 +5,11 @@ export interface TableNodeData {
   kind: "entity";
   entity: Entity;
   collapsed: boolean;
+  /**
+   * Foreign-key fields of this entity: field id -> "TargetEntity(targetField)".
+   * The keys are the set of FK field ids.
+   */
+  fkRefs: Record<string, string>;
   [key: string]: unknown;
 }
 

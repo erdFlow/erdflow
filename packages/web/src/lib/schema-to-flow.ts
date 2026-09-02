@@ -17,12 +17,44 @@ interface BuildFlowGraphOptions {
   collapsedTables: Record<string, boolean>;
 }
 
+/**
+ * Map of entityId -> { fieldId: "TargetEntity(targetField)" } for every field
+ * that is the "from" side of a relation (i.e. a foreign key). The keys double as
+ * the set of FK field ids for that entity.
+ */
+export function foreignKeyRefs(
+  schema: UniversalSchema,
+): Map<string, Record<string, string>> {
+  const entityById = new Map(schema.entities.map((entity) => [entity.id, entity]));
+  const out = new Map<string, Record<string, string>>();
+
+  for (const relation of schema.relations) {
+    const toEntity = entityById.get(relation.to.entityId);
+    const fromIds = relation.from.fieldIds ?? [];
+    const toIds = relation.to.fieldIds ?? [];
+    const refs = out.get(relation.from.entityId) ?? {};
+
+    fromIds.forEach((fromId, index) => {
+      const toId = toIds[index] ?? toIds[0];
+      const toField = toEntity?.fields.find((field) => field.id === toId);
+      refs[fromId] = toEntity
+        ? `${toEntity.name}(${toField?.name ?? "id"})`
+        : "";
+    });
+
+    out.set(relation.from.entityId, refs);
+  }
+
+  return out;
+}
+
 export function schemaToFlow({
   schema,
   layout,
   manualPositions,
   collapsedTables,
 }: BuildFlowGraphOptions): { nodes: Node[]; edges: Edge[] } {
+  const fkRefsByEntity = foreignKeyRefs(schema);
   const layoutNodeMap = new Map(layout.nodes.map((node) => [node.id, node]));
   const layoutEdgeMap = new Map(layout.edges.map((edge) => [edge.id, edge]));
   const nodes: Node[] = [];
@@ -43,6 +75,7 @@ export function schemaToFlow({
         kind: "entity",
         entity,
         collapsed,
+        fkRefs: fkRefsByEntity.get(entity.id) ?? {},
       },
       style: {
         width: layoutNode?.width ?? ENTITY_NODE_WIDTH,
@@ -106,6 +139,7 @@ export function updateFlowData(
 ): Node[] {
   const entityMap = new Map(schema.entities.map((entity) => [entity.id, entity]));
   const enumMap = new Map(schema.enums.map((enumDef) => [enumDef.id, enumDef]));
+  const fkRefsByEntity = foreignKeyRefs(schema);
 
   const nextNodes: Node[] = [];
 
@@ -119,6 +153,7 @@ export function updateFlowData(
           kind: "entity" as const,
           entity,
           collapsed,
+          fkRefs: fkRefsByEntity.get(node.id) ?? {},
         },
         style: {
           ...node.style,

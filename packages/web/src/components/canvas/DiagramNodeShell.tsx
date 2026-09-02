@@ -15,7 +15,7 @@ const hiddenHandleClass =
 
 export function DiagramNodeShell({ title, children }: DiagramNodeShellProps) {
   return (
-    <div className="relative size-full min-w-0 overflow-hidden rounded-md border border-border bg-card text-card-foreground shadow-sm">
+    <div className="relative size-full min-w-0 overflow-hidden rounded-md border border-border bg-card text-card-foreground shadow-sm transition-colors hover:border-dashed hover:border-muted-foreground/70">
       <Handle
         type="target"
         position={Position.Left}
