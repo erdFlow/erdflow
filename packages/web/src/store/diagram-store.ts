@@ -1,5 +1,6 @@
 import type { UniversalSchema } from "@erdflow/core";
-import type { Edge, Node } from "@xyflow/react";
+import { ENTITY_HEADER_HEIGHT } from "@erdflow/layout";
+import { applyNodeChanges, type Edge, type Node, type NodeChange } from "@xyflow/react";
 import { create } from "zustand";
 import { mergeSchemaUpdate } from "../lib/merge-schema.js";
 
@@ -34,6 +35,7 @@ export interface DiagramState {
   setFocusedEntityId: (entityId: string | null) => void;
   setShowRelations: (show: boolean) => void;
   toggleTableCollapsed: (entityId: string) => void;
+  onNodesChange: (changes: NodeChange[]) => void;
   setManualPosition: (nodeId: string, position: { x: number; y: number }) => void;
   setCanvasControls: (controls: CanvasControls | null) => void;
   clearFocus: () => void;
@@ -96,19 +98,24 @@ export const useDiagramStore = create<DiagramState>((set, get) => ({
           },
           style: {
             ...node.style,
-            height: collapsed ? 48 : node.style?.height,
+            height: collapsed ? ENTITY_HEADER_HEIGHT : node.style?.height,
           },
         };
       });
 
       return { collapsedTables, nodes };
     }),
+  onNodesChange: (changes) =>
+    set((state) => ({ nodes: applyNodeChanges(changes, state.nodes) })),
   setManualPosition: (nodeId, position) =>
     set((state) => ({
       manualPositions: {
         ...state.manualPositions,
         [nodeId]: position,
       },
+      nodes: state.nodes.map((node) =>
+        node.id === nodeId ? { ...node, position } : node,
+      ),
     })),
   setCanvasControls: (canvasControls) => set({ canvasControls }),
   clearFocus: () => set({ focusedEntityId: null }),

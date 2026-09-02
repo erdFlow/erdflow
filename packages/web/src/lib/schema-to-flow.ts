@@ -1,8 +1,14 @@
 import type { Entity, Enum, UniversalSchema } from "@erdflow/core";
-import type { LayoutResult } from "@erdflow/layout";
+import {
+  ENTITY_HEADER_HEIGHT,
+  ENTITY_NODE_WIDTH,
+  ENUM_NODE_WIDTH,
+  type LayoutResult,
+} from "@erdflow/layout";
 import type { Edge, Node } from "@xyflow/react";
 import type { RelationEdgeData } from "../types/flow-types.js";
 import { entityNodeHeight, enumNodeHeight } from "./node-dimensions.js";
+import { resolveRelationHandles } from "./relation-handles.js";
 
 interface BuildFlowGraphOptions {
   schema: UniversalSchema;
@@ -39,8 +45,10 @@ export function schemaToFlow({
         collapsed,
       },
       style: {
-        width: layoutNode?.width ?? 220,
-        height: collapsed ? 48 : (layoutNode?.height ?? entityNodeHeight(entity)),
+        width: layoutNode?.width ?? ENTITY_NODE_WIDTH,
+        height: collapsed
+          ? ENTITY_HEADER_HEIGHT
+          : (layoutNode?.height ?? entityNodeHeight(entity)),
       },
     });
   }
@@ -61,7 +69,7 @@ export function schemaToFlow({
         enumDef,
       },
       style: {
-        width: layoutNode?.width ?? 180,
+        width: layoutNode?.width ?? ENUM_NODE_WIDTH,
         height: layoutNode?.height ?? enumNodeHeight(enumDef),
       },
     });
@@ -69,15 +77,21 @@ export function schemaToFlow({
 
   const edges: Edge<RelationEdgeData>[] = schema.relations.map((relation) => {
     const layoutEdge = layoutEdgeMap.get(relation.id);
+    const handles = resolveRelationHandles(schema, relation);
 
     return {
       id: relation.id,
       type: "relation",
       source: relation.from.entityId,
       target: relation.to.entityId,
+      sourceHandle: handles.sourceHandle,
+      targetHandle: handles.targetHandle,
       data: {
         relation,
         points: layoutEdge?.points,
+        useFieldHandles: false,
+        fromFieldIndex: handles.fromFieldIndex,
+        toFieldIndex: handles.toFieldIndex,
       },
     };
   });
@@ -108,7 +122,7 @@ export function updateFlowData(
         },
         style: {
           ...node.style,
-          height: collapsed ? 48 : entityNodeHeight(entity),
+          height: collapsed ? ENTITY_HEADER_HEIGHT : entityNodeHeight(entity),
         },
       });
       continue;

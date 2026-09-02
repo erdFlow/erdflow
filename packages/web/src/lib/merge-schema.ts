@@ -1,7 +1,9 @@
 import type { Entity, Enum, Relation, UniversalSchema } from "@erdflow/core";
 import { layoutSchema, schemaTopologyHash } from "@erdflow/layout";
 import type { Edge, Node } from "@xyflow/react";
+import type { RelationEdgeData } from "../types/flow-types.js";
 import { schemaToFlow, updateFlowData } from "./schema-to-flow.js";
+import { resolveRelationHandles } from "./relation-handles.js";
 
 export interface MergeSchemaOptions {
   previousSchema: UniversalSchema | null;
@@ -66,13 +68,21 @@ export async function mergeSchemaUpdate(
         return edge;
       }
 
+      const handles = resolveRelationHandles(schema, relation);
+
       return {
         ...edge,
         source: relation.from.entityId,
         target: relation.to.entityId,
+        sourceHandle: handles.sourceHandle,
+        targetHandle: handles.targetHandle,
         data: {
           ...(edge.data as Record<string, unknown>),
           relation,
+          useFieldHandles: false,
+          fromFieldIndex: handles.fromFieldIndex,
+          toFieldIndex: handles.toFieldIndex,
+          points: (edge.data as RelationEdgeData | undefined)?.points,
         },
       };
     });

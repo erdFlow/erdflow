@@ -19,5 +19,10 @@ export type DiagramNodeData = TableNodeData | EnumNodeData;
 export interface RelationEdgeData {
   relation: Relation;
   points?: LayoutPoint[];
+  useFieldHandles?: boolean;
+  /** Row index of the anchored field in the source table, if known. */
+  fromFieldIndex?: number;
+  /** Row index of the anchored field in the target table, if known. */
+  toFieldIndex?: number;
   [key: string]: unknown;
 }

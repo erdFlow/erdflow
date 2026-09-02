@@ -1,6 +1,10 @@
-import type { Entity, Enum, UniversalSchema } from "@erdflow/core";
+import type { UniversalSchema } from "@erdflow/core";
 import type { LayoutOptions } from "./types.js";
 import { buildRootLayoutOptions } from "./elk.js";
+import {
+  entityNodeDimensions,
+  enumNodeDimensions,
+} from "./node-dimensions.js";
 
 interface ElkNodeInput {
   id: string;
@@ -25,20 +29,6 @@ export interface ElkNodeKindMap {
   [nodeId: string]: "entity" | "enum";
 }
 
-function entityDimensions(entity: Entity): { width: number; height: number } {
-  return {
-    width: 220,
-    height: Math.max(80, 48 + entity.fields.length * 24),
-  };
-}
-
-function enumDimensions(enumDef: Enum): { width: number; height: number } {
-  return {
-    width: 180,
-    height: Math.max(72, 48 + enumDef.values.length * 20),
-  };
-}
-
 export function toElkGraph(
   schema: UniversalSchema,
   options?: LayoutOptions,
@@ -50,7 +40,7 @@ export function toElkGraph(
   for (const entity of schema.entities) {
     nodeIds.add(entity.id);
     nodeKinds[entity.id] = "entity";
-    const size = entityDimensions(entity);
+    const size = entityNodeDimensions(entity);
     children.push({
       id: entity.id,
       width: size.width,
@@ -61,7 +51,7 @@ export function toElkGraph(
   for (const enumDef of schema.enums) {
     nodeIds.add(enumDef.id);
     nodeKinds[enumDef.id] = "enum";
-    const size = enumDimensions(enumDef);
+    const size = enumNodeDimensions(enumDef);
     children.push({
       id: enumDef.id,
       width: size.width,

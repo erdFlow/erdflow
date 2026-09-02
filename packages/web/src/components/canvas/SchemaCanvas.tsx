@@ -41,6 +41,7 @@ function SchemaCanvasInner() {
   const showRelations = useDiagramStore((state) => state.showRelations);
   const setFocusedEntityId = useDiagramStore((state) => state.setFocusedEntityId);
   const setManualPosition = useDiagramStore((state) => state.setManualPosition);
+  const onNodesChange = useDiagramStore((state) => state.onNodesChange);
 
   const normalizedQuery = searchQuery.trim().toLowerCase();
 
@@ -67,6 +68,11 @@ function SchemaCanvasInner() {
 
       if (focusSets && !hidden) {
         opacity = focusSets.nodeIds.has(node.id) ? 1 : 0.25;
+      }
+
+      const currentOpacity = node.style?.opacity ?? 1;
+      if (node.hidden === hidden && currentOpacity === opacity) {
+        return node;
       }
 
       return {
@@ -122,6 +128,7 @@ function SchemaCanvasInner() {
       panOnScroll
       zoomOnScroll
       nodesDraggable
+      onNodesChange={onNodesChange}
       onNodeClick={onNodeClick}
       onNodeDragStop={onNodeDragStop}
       proOptions={{ hideAttribution: true }}

@@ -1,9 +1,15 @@
-import type { Entity, Enum } from "@erdflow/core";
-
-export function entityNodeHeight(entity: Entity): number {
-  return Math.max(80, 48 + entity.fields.length * 24);
-}
-
-export function enumNodeHeight(enumDef: Enum): number {
-  return Math.max(72, 48 + enumDef.values.length * 20);
-}
+export {
+  ENTITY_HEADER_HEIGHT,
+  ENTITY_MIN_HEIGHT,
+  ENTITY_NODE_WIDTH,
+  ENTITY_ROW_HEIGHT,
+  ENUM_HEADER_HEIGHT,
+  ENUM_MIN_HEIGHT,
+  ENUM_NODE_WIDTH,
+  ENUM_ROW_HEIGHT,
+  entityFieldCenterY,
+  entityNodeDimensions,
+  entityNodeHeight,
+  enumNodeDimensions,
+  enumNodeHeight,
+} from "@erdflow/layout";
