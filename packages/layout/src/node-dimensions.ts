@@ -1,6 +1,6 @@
 import type { Entity, Enum } from "@erdflow/core";
 
-export const ENTITY_NODE_WIDTH = 220;
+export const ENTITY_NODE_WIDTH = 248;
 export const ENTITY_HEADER_HEIGHT = 48;
 export const ENTITY_ROW_HEIGHT = 24;
 export const ENTITY_MIN_HEIGHT = 80;

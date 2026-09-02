@@ -8,21 +8,16 @@ import {
   Position,
   useInternalNode,
 } from "@xyflow/react";
-import { Badge } from "@workspace/ui/components/badge";
 import { entityFieldCenterY } from "../../lib/node-dimensions.js";
 import type { RelationEdgeData } from "../../types/flow-types.js";
 
-function formatCardinality(cardinality: string): string {
-  switch (cardinality) {
-    case "one-to-one":
-      return "1:1";
-    case "one-to-many":
-      return "1:N";
-    case "many-to-many":
-      return "N:M";
-    default:
-      return cardinality;
-  }
+/** Endpoint cardinality symbols: "1" for a single side, "n" for a many side. */
+function cardinalitySymbols(cardinality: string): { source: string; target: string } {
+  const [from, to] = cardinality.split("-to-");
+  return {
+    source: from === "many" ? "n" : "1",
+    target: to === "many" ? "n" : "1",
+  };
 }
 
 function buildPathFromPoints(points: Array<{ x: number; y: number }>): string {
@@ -63,6 +58,30 @@ function anchor(
   return { x, y };
 }
 
+function EndpointBadge({
+  x,
+  y,
+  dir,
+  label,
+}: {
+  x: number;
+  y: number;
+  /** -1 = endpoint on node's left edge, +1 = right edge. Badge sits outside. */
+  dir: number;
+  label: string;
+}) {
+  return (
+    <div
+      className="pointer-events-none absolute flex size-4 items-center justify-center rounded-full bg-foreground text-[9px] font-semibold text-background ring-2 ring-background"
+      style={{
+        transform: `translate(-50%, -50%) translate(${x + dir * 11}px, ${y}px)`,
+      }}
+    >
+      {label}
+    </div>
+  );
+}
+
 function RelationEdgeComponent({
   id,
   source,
@@ -82,8 +101,13 @@ function RelationEdgeComponent({
   const targetBox = nodeBox(useInternalNode(target));
 
   let routedPath: string;
-  let labelX: number;
-  let labelY: number;
+  let sEndX = sourceX;
+  let sEndY = sourceY;
+  let tEndX = targetX;
+  let tEndY = targetY;
+  let sDir = 0;
+  let tDir = 0;
+  let showBadges = false;
 
   if (sourceBox && targetBox) {
     const sourceCenterX = sourceBox.x + sourceBox.width / 2;
@@ -92,8 +116,15 @@ function RelationEdgeComponent({
 
     const s = anchor(sourceBox, sourceOnRight, edgeData?.fromFieldIndex);
     const t = anchor(targetBox, !sourceOnRight, edgeData?.toFieldIndex);
+    sEndX = s.x;
+    sEndY = s.y;
+    tEndX = t.x;
+    tEndY = t.y;
+    sDir = sourceOnRight ? 1 : -1;
+    tDir = sourceOnRight ? -1 : 1;
+    showBadges = true;
 
-    [routedPath, labelX, labelY] = getSmoothStepPath({
+    [routedPath] = getSmoothStepPath({
       sourceX: s.x,
       sourceY: s.y,
       targetX: t.x,
@@ -104,16 +135,14 @@ function RelationEdgeComponent({
     });
   } else if (edgeData?.points && edgeData.points.length > 0) {
     routedPath = buildPathFromPoints(edgeData.points);
-    [, labelX, labelY] = getBezierPath({
-      sourceX,
-      sourceY,
-      targetX,
-      targetY,
-      sourcePosition,
-      targetPosition,
-    });
+    const first = edgeData.points[0]!;
+    const last = edgeData.points[edgeData.points.length - 1]!;
+    sEndX = first.x;
+    sEndY = first.y;
+    tEndX = last.x;
+    tEndY = last.y;
   } else {
-    [routedPath, labelX, labelY] = getBezierPath({
+    [routedPath] = getBezierPath({
       sourceX,
       sourceY,
       targetX,
@@ -123,21 +152,17 @@ function RelationEdgeComponent({
     });
   }
 
+  const symbols = edgeData?.relation
+    ? cardinalitySymbols(edgeData.relation.cardinality)
+    : null;
+
   return (
     <>
       <BaseEdge id={id} path={routedPath} markerEnd={markerEnd} style={style} />
-      {edgeData?.relation ? (
+      {symbols && showBadges ? (
         <EdgeLabelRenderer>
-          <div
-            className="pointer-events-none absolute"
-            style={{
-              transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
-            }}
-          >
-            <Badge variant="outline">
-              {formatCardinality(edgeData.relation.cardinality)}
-            </Badge>
-          </div>
+          <EndpointBadge x={sEndX} y={sEndY} dir={sDir} label={symbols.source} />
+          <EndpointBadge x={tEndX} y={tEndY} dir={tDir} label={symbols.target} />
         </EdgeLabelRenderer>
       ) : null}
     </>

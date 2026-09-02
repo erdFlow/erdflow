@@ -19,23 +19,27 @@ function TableNodeComponent({ data }: NodeProps) {
               key={field.id}
               className="box-border flex h-6 shrink-0 items-center gap-2 border-b border-border/50 px-2 text-xs leading-none last:border-b-0"
             >
+              <span
+                className={`size-1.5 shrink-0 rounded-full ${
+                  field.isPrimaryKey ? "bg-primary" : "bg-muted-foreground/40"
+                }`}
+              />
               <span className="min-w-0 flex-1 truncate">{field.name}</span>
-              <Badge
-                variant="secondary"
-                className={`max-w-24 shrink truncate ${rowBadgeClass}`}
+              <span
+                className="w-20 shrink-0 truncate text-right text-muted-foreground"
+                title={field.type.name}
               >
                 {field.type.name}
-              </Badge>
-              <div className="flex shrink-0 items-center gap-1">
+              </span>
+              <span className="flex w-8 shrink-0 justify-end">
                 {field.isPrimaryKey ? (
                   <Badge className={rowBadgeClass}>PK</Badge>
-                ) : null}
-                {field.isUnique && !field.isPrimaryKey ? (
+                ) : field.isUnique ? (
                   <Badge variant="outline" className={rowBadgeClass}>
                     UQ
                   </Badge>
                 ) : null}
-              </div>
+              </span>
             </div>
           ))}
         </div>
