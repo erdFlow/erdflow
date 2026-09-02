@@ -1,4 +1,4 @@
-import { memo } from "react";
+import { memo, useState } from "react";
 import {
   BaseEdge,
   EdgeLabelRenderer,
@@ -99,8 +99,11 @@ function RelationEdgeComponent({
   const edgeData = data as RelationEdgeData | undefined;
   const sourceBox = nodeBox(useInternalNode(source));
   const targetBox = nodeBox(useInternalNode(target));
+  const [hovered, setHovered] = useState(false);
 
   let routedPath: string;
+  let labelX = (sourceX + targetX) / 2;
+  let labelY = (sourceY + targetY) / 2;
   let sEndX = sourceX;
   let sEndY = sourceY;
   let tEndX = targetX;
@@ -124,7 +127,7 @@ function RelationEdgeComponent({
     tDir = sourceOnRight ? -1 : 1;
     showBadges = true;
 
-    [routedPath] = getSmoothStepPath({
+    [routedPath, labelX, labelY] = getSmoothStepPath({
       sourceX: s.x,
       sourceY: s.y,
       targetX: t.x,
@@ -141,8 +144,11 @@ function RelationEdgeComponent({
     sEndY = first.y;
     tEndX = last.x;
     tEndY = last.y;
+    const mid = edgeData.points[Math.floor(edgeData.points.length / 2)]!;
+    labelX = mid.x;
+    labelY = mid.y;
   } else {
-    [routedPath] = getBezierPath({
+    [routedPath, labelX, labelY] = getBezierPath({
       sourceX,
       sourceY,
       targetX,
@@ -155,14 +161,51 @@ function RelationEdgeComponent({
   const symbols = edgeData?.relation
     ? cardinalitySymbols(edgeData.relation.cardinality)
     : null;
+  const relationName = edgeData?.relation?.name;
+
+  const hoverStyle = hovered
+    ? {
+        stroke: "#3b82f6",
+        strokeWidth: 2.5,
+        strokeDasharray: "6 5",
+        animation: "dashdraw 0.5s linear infinite",
+      }
+    : null;
 
   return (
     <>
-      <BaseEdge id={id} path={routedPath} markerEnd={markerEnd} style={style} />
+      <BaseEdge
+        id={id}
+        path={routedPath}
+        markerEnd={markerEnd}
+        interactionWidth={0}
+        style={{ ...style, ...hoverStyle, pointerEvents: "none" }}
+      />
+      {/* wide transparent hit area on top for hover detection */}
+      <path
+        d={routedPath}
+        fill="none"
+        stroke="transparent"
+        strokeWidth={24}
+        strokeLinecap="round"
+        style={{ pointerEvents: "stroke", cursor: "pointer" }}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+      />
       {symbols && showBadges ? (
         <EdgeLabelRenderer>
           <EndpointBadge x={sEndX} y={sEndY} dir={sDir} label={symbols.source} />
           <EndpointBadge x={tEndX} y={tEndY} dir={tDir} label={symbols.target} />
+          {hovered && relationName ? (
+            <div
+              className="pointer-events-none absolute rounded-md border border-blue-500/40 bg-background px-1.5 py-0.5 text-[11px] font-medium text-blue-600 shadow-sm dark:text-blue-400"
+              style={{
+                transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
+              }}
+            >
+              {relationName}
+            </div>
+          ) : null}
         </EdgeLabelRenderer>
       ) : null}
     </>
