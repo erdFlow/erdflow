@@ -6,6 +6,7 @@ import {
   type LayoutResult,
 } from "@erdflow/layout"
 import type { Edge, Node } from "@xyflow/react"
+import { EdgeKind, NodeKind } from "../data/constants.js"
 import type { RelationEdgeData } from "../types/flow-types.js"
 import { foreignKeyRefs } from "./foreign-key-refs.js"
 import { entityNodeHeight, enumNodeHeight } from "./node-dimensions.js"
@@ -36,7 +37,7 @@ export function schemaToFlow({
 
     nodes.push({
       id: entity.id,
-      type: "table",
+      type: NodeKind.TABLE,
       position: manual ?? {
         x: layoutNode?.x ?? 0,
         y: layoutNode?.y ?? 0,
@@ -62,7 +63,7 @@ export function schemaToFlow({
 
     nodes.push({
       id: enumDef.id,
-      type: "enum",
+      type: NodeKind.ENUM,
       position: manual ?? {
         x: layoutNode?.x ?? 0,
         y: layoutNode?.y ?? 0,
@@ -84,7 +85,7 @@ export function schemaToFlow({
 
     return {
       id: relation.id,
-      type: "relation",
+      type: EdgeKind.RELATION,
       source: relation.from.entityId,
       target: relation.to.entityId,
       sourceHandle: handles.sourceHandle,

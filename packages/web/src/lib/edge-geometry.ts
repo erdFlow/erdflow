@@ -1,3 +1,9 @@
+import {
+  ANCHOR_Y_MAX_INSET,
+  ANCHOR_Y_MIN,
+  FALLBACK_NODE_HEIGHT,
+  FALLBACK_NODE_WIDTH,
+} from "../data/constants.js"
 import { entityFieldCenterY } from "./node-dimensions.js"
 
 export interface NodeBox {
@@ -48,9 +54,13 @@ export function nodeBox(
   if (!node) return null
   const position = node.internals.positionAbsolute
   const width =
-    node.measured?.width ?? (node.width as number | undefined) ?? 220
+    node.measured?.width ??
+    (node.width as number | undefined) ??
+    FALLBACK_NODE_WIDTH
   const height =
-    node.measured?.height ?? (node.height as number | undefined) ?? 80
+    node.measured?.height ??
+    (node.height as number | undefined) ??
+    FALLBACK_NODE_HEIGHT
   return { x: position.x, y: position.y, width, height }
 }
 
@@ -63,6 +73,8 @@ export function anchor(
   const x = onRight ? box.x + box.width : box.x
   const rawY =
     fieldIndex != null ? entityFieldCenterY(fieldIndex) : box.height / 2
-  const y = box.y + Math.min(Math.max(rawY, 8), box.height - 4)
+  const y =
+    box.y +
+    Math.min(Math.max(rawY, ANCHOR_Y_MIN), box.height - ANCHOR_Y_MAX_INSET)
   return { x, y }
 }

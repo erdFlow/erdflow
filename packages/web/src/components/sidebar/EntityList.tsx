@@ -14,6 +14,11 @@ import {
   SidebarMenuItem,
 } from "@workspace/ui/components/sidebar"
 import { useMemo } from "react"
+import {
+  EMPTY_NO_MATCHES,
+  EMPTY_NO_SCHEMA,
+  SIDEBAR_SECTION,
+} from "../../data/labels.js"
 import { useDiagramStore } from "../../store/diagram-store.js"
 
 export function EntityList() {
@@ -54,10 +59,8 @@ export function EntityList() {
     return (
       <Empty>
         <EmptyHeader>
-          <EmptyTitle>No schema loaded</EmptyTitle>
-          <EmptyDescription>
-            Waiting for schema from the CLI server.
-          </EmptyDescription>
+          <EmptyTitle>{EMPTY_NO_SCHEMA.title}</EmptyTitle>
+          <EmptyDescription>{EMPTY_NO_SCHEMA.description}</EmptyDescription>
         </EmptyHeader>
       </Empty>
     )
@@ -67,8 +70,8 @@ export function EntityList() {
     return (
       <Empty>
         <EmptyHeader>
-          <EmptyTitle>No matches</EmptyTitle>
-          <EmptyDescription>Try a different search term.</EmptyDescription>
+          <EmptyTitle>{EMPTY_NO_MATCHES.title}</EmptyTitle>
+          <EmptyDescription>{EMPTY_NO_MATCHES.description}</EmptyDescription>
         </EmptyHeader>
       </Empty>
     )
@@ -78,7 +81,7 @@ export function EntityList() {
     <>
       <SidebarGroup>
         <SidebarGroupLabel>
-          Tables
+          {SIDEBAR_SECTION.TABLES}
           <SidebarMenuBadge>{entities.length}</SidebarMenuBadge>
         </SidebarGroupLabel>
         <SidebarGroupContent>
@@ -101,7 +104,7 @@ export function EntityList() {
       {enums.length > 0 ? (
         <SidebarGroup>
           <SidebarGroupLabel>
-            Enums
+            {SIDEBAR_SECTION.ENUMS}
             <SidebarMenuBadge>{enums.length}</SidebarMenuBadge>
           </SidebarGroupLabel>
           <SidebarGroupContent>

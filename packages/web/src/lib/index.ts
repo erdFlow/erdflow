@@ -1,3 +1,4 @@
+export { typeColorClass } from "../data/type-colors.js"
 export {
   anchor,
   buildPathFromPoints,
@@ -41,4 +42,3 @@ export {
   type SchemaSocketMessage,
 } from "./schema-socket.js"
 export { schemaToFlow, updateFlowData } from "./schema-to-flow.js"
-export { typeColorClass } from "./type-color.js"

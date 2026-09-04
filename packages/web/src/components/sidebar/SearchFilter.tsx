@@ -1,4 +1,5 @@
 import { Input } from "@workspace/ui/components/input"
+import { SEARCH_ARIA_LABEL, SEARCH_PLACEHOLDER } from "../../data/labels.js"
 import { useDiagramStore } from "../../store/diagram-store.js"
 
 export function SearchFilter() {
@@ -8,8 +9,8 @@ export function SearchFilter() {
   return (
     <div className="px-2 py-2">
       <Input
-        aria-label="Search tables and enums"
-        placeholder="Search tables and enums"
+        aria-label={SEARCH_ARIA_LABEL}
+        placeholder={SEARCH_PLACEHOLDER}
         value={searchQuery}
         onChange={(event) => setSearchQuery(event.target.value)}
       />

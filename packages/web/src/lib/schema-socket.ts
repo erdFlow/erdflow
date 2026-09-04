@@ -1,4 +1,10 @@
 import type { UniversalSchema } from "@erdflow/core"
+import {
+  SCHEMA_API_PATH,
+  SCHEMA_RECONNECT_MS,
+  SCHEMA_WS_PATH,
+  UNKNOWN_SCHEMA_ERROR,
+} from "../data/constants.js"
 import type { ConnectionStatus } from "../types/diagram-store.js"
 
 export type SchemaSocketMessage =
@@ -14,7 +20,7 @@ export interface SchemaSocketHandlers {
 export async function fetchInitialSchema(
   onSchema: SchemaSocketHandlers["onSchema"]
 ): Promise<void> {
-  const response = await fetch("/api/schema")
+  const response = await fetch(SCHEMA_API_PATH)
   if (!response.ok) {
     return
   }
@@ -23,7 +29,7 @@ export async function fetchInitialSchema(
   await onSchema(schema)
 }
 
-/** Open a reconnecting WebSocket to `/ws`. Returns a dispose function. */
+/** Open a reconnecting WebSocket to the schema socket path. Returns dispose. */
 export function connectSchemaSocket(
   handlers: SchemaSocketHandlers
 ): () => void {
@@ -37,7 +43,9 @@ export function connectSchemaSocket(
     }
 
     const protocol = window.location.protocol === "https:" ? "wss" : "ws"
-    socket = new WebSocket(`${protocol}://${window.location.host}/ws`)
+    socket = new WebSocket(
+      `${protocol}://${window.location.host}${SCHEMA_WS_PATH}`
+    )
 
     socket.addEventListener("open", () => {
       handlers.onStatus("connected")
@@ -54,7 +62,7 @@ export function connectSchemaSocket(
         }
 
         if (message.type === "error") {
-          handlers.onError(message.message ?? "Unknown schema error")
+          handlers.onError(message.message ?? UNKNOWN_SCHEMA_ERROR)
           handlers.onStatus("error")
         }
       } catch (error) {
@@ -68,7 +76,7 @@ export function connectSchemaSocket(
         return
       }
       handlers.onStatus("disconnected")
-      reconnectTimer = setTimeout(connect, 1000)
+      reconnectTimer = setTimeout(connect, SCHEMA_RECONNECT_MS)
     })
 
     socket.addEventListener("error", () => {

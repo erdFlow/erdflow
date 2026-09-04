@@ -10,6 +10,12 @@ import {
 } from "@xyflow/react"
 import { useCallback, useEffect, useMemo } from "react"
 import "@xyflow/react/dist/style.css"
+import {
+  CANVAS_MIN_HEIGHT_CLASS,
+  FIT_VIEW_PADDING,
+  FOCUS_EDGE_OPACITY,
+  FOCUS_NODE_OPACITY,
+} from "../../data/constants.js"
 import { getConnectedIds } from "../../lib/focus-utils.js"
 import { useDiagramStore } from "../../store/diagram-store.js"
 import type { DiagramNodeData } from "../../types/flow-types.js"
@@ -21,7 +27,7 @@ function CanvasControlsRegistrar() {
 
   useEffect(() => {
     setCanvasControls({
-      fitView: () => fitView({ padding: 0.2 }),
+      fitView: () => fitView({ padding: FIT_VIEW_PADDING }),
       zoomIn: () => zoomIn(),
       zoomOut: () => zoomOut(),
     })
@@ -69,7 +75,7 @@ function SchemaCanvasInner() {
       }
 
       if (focusSets && !hidden) {
-        opacity = focusSets.nodeIds.has(node.id) ? 1 : 0.25
+        opacity = focusSets.nodeIds.has(node.id) ? 1 : FOCUS_NODE_OPACITY
       }
 
       const currentOpacity = node.style?.opacity ?? 1
@@ -94,7 +100,7 @@ function SchemaCanvasInner() {
       let opacity = 1
 
       if (focusSets && showRelations) {
-        opacity = focusSets.edgeIds.has(edge.id) ? 1 : 0.2
+        opacity = focusSets.edgeIds.has(edge.id) ? 1 : FOCUS_EDGE_OPACITY
       }
 
       return {
@@ -153,7 +159,7 @@ export function SchemaCanvas() {
   return (
     <div className="min-h-0 flex-1">
       <ReactFlowProvider>
-        <div className="size-full min-h-[480px]">
+        <div className={`size-full ${CANVAS_MIN_HEIGHT_CLASS}`}>
           <SchemaCanvasInner />
         </div>
       </ReactFlowProvider>

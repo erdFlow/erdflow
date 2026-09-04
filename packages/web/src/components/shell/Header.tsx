@@ -5,6 +5,7 @@ import { SidebarTrigger } from "@workspace/ui/components/sidebar"
 import { Switch } from "@workspace/ui/components/switch"
 import { Tooltip, TooltipTrigger } from "@workspace/ui/components/tooltip"
 import { FocusIcon, Maximize2Icon, MinusIcon, PlusIcon } from "lucide-react"
+import { BRAND_NAME } from "../../data/constants.js"
 import { useDiagramStore } from "../../store/diagram-store.js"
 
 export function Header() {
@@ -24,7 +25,7 @@ export function Header() {
       <div className="flex min-w-0 flex-1 items-start gap-2">
         <SidebarTrigger className="mt-0.5" />
         <div className="flex min-w-0 flex-col gap-1">
-          <h1 className="font-heading font-medium text-base">erdflow</h1>
+          <h1 className="font-heading font-medium text-base">{BRAND_NAME}</h1>
           <div className="flex flex-wrap items-center gap-2">
             <Badge variant="secondary">{entityCount} tables</Badge>
             <Badge variant="secondary">{enumCount} enums</Badge>

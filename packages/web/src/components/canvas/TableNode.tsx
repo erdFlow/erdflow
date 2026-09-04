@@ -1,31 +1,30 @@
 import { type NodeProps, NodeToolbar, Position } from "@xyflow/react"
 import { KeyRoundIcon, Link2Icon } from "lucide-react"
 import { memo, useMemo, useState } from "react"
-import { typeColorClass } from "../../lib/type-color.js"
+import {
+  FIELD_TOOLBAR_OFFSET,
+  FIELD_TOOLTIP_WIDTH_CLASS,
+  FIELD_TYPE_COLUMN_WIDTH_CLASS,
+} from "../../data/constants.js"
+import {
+  FIELD_PILL,
+  type FieldPill,
+  isAutoIncrement,
+  type PillTone,
+  pillClass,
+} from "../../data/field-pills.js"
+import {
+  FIELD_DETAIL_COMMENT,
+  FIELD_DETAIL_DEFAULT,
+  FIELD_DETAIL_EMPTY_REF,
+  FIELD_DETAIL_NOT_SET,
+  FIELD_DETAIL_REFERENCES,
+} from "../../data/labels.js"
+import { typeColorClass } from "../../data/type-colors.js"
 import type { TableNodeData } from "../../types/flow-types.js"
 import { DiagramNodeShell } from "./DiagramNodeShell.js"
 
-function isAutoIncrement(defaultValue: string | undefined): boolean {
-  return /auto_?increment|nextval|identity|autoincrement/i.test(
-    defaultValue ?? ""
-  )
-}
-
-const pillClass = {
-  blue: "bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300",
-  amber: "bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300",
-  violet:
-    "bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-300",
-  green: "bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-300",
-} as const
-
-function AttrPill({
-  label,
-  tone,
-}: {
-  label: string
-  tone: keyof typeof pillClass
-}) {
+function AttrPill({ label, tone }: { label: string; tone: PillTone }) {
   return (
     <span
       className={`rounded px-1.5 py-0.5 font-medium text-[10px] leading-none ${pillClass[tone]}`}
@@ -76,7 +75,7 @@ function TableNodeComponent({ data }: NodeProps) {
                   ) : null}
                 </span>
                 <span
-                  className={`flex w-[76px] shrink-0 items-center justify-end gap-0.5 truncate text-right font-mono text-[11px] ${typeColorClass(
+                  className={`flex ${FIELD_TYPE_COLUMN_WIDTH_CLASS} shrink-0 items-center justify-end gap-0.5 truncate text-right font-mono text-[11px] ${typeColorClass(
                     field.type.name
                   )}`}
                   title={field.type.name}
@@ -95,10 +94,12 @@ function TableNodeComponent({ data }: NodeProps) {
       <NodeToolbar
         isVisible={hoveredField != null && !nodeData.collapsed}
         position={Position.Right}
-        offset={8}
+        offset={FIELD_TOOLBAR_OFFSET}
       >
         {hoveredField ? (
-          <div className="w-52 rounded-lg border border-border bg-card px-2.5 py-2 text-card-foreground shadow-md">
+          <div
+            className={`${FIELD_TOOLTIP_WIDTH_CLASS} rounded-lg border border-border bg-card px-2.5 py-2 text-card-foreground shadow-md`}
+          >
             <div className="flex items-baseline justify-between gap-2">
               <span className="truncate font-semibold text-sm leading-tight">
                 {hoveredField.name}
@@ -113,20 +114,14 @@ function TableNodeComponent({ data }: NodeProps) {
             <div className="my-1.5 border-border border-t" />
 
             {(() => {
-              const pills: Array<{
-                label: string
-                tone: keyof typeof pillClass
-              }> = []
-              if (hoveredField.isPrimaryKey)
-                pills.push({ label: "Primary key", tone: "blue" })
-              if (hoveredField.id in fkRefs)
-                pills.push({ label: "Foreign key", tone: "blue" })
-              if (hoveredField.isUnique)
-                pills.push({ label: "Unique", tone: "amber" })
-              if (!hoveredField.nullable)
-                pills.push({ label: "Not null", tone: "violet" })
-              if (isAutoIncrement(hoveredField.default))
-                pills.push({ label: "Autoincrement", tone: "green" })
+              const pills: FieldPill[] = []
+              if (hoveredField.isPrimaryKey) pills.push(FIELD_PILL.PRIMARY_KEY)
+              if (hoveredField.id in fkRefs) pills.push(FIELD_PILL.FOREIGN_KEY)
+              if (hoveredField.isUnique) pills.push(FIELD_PILL.UNIQUE)
+              if (!hoveredField.nullable) pills.push(FIELD_PILL.NOT_NULL)
+              if (isAutoIncrement(hoveredField.default)) {
+                pills.push(FIELD_PILL.AUTOINCREMENT)
+              }
 
               return pills.length > 0 ? (
                 <div className="mb-1.5 flex flex-wrap gap-1">
@@ -144,17 +139,17 @@ function TableNodeComponent({ data }: NodeProps) {
             <div className="space-y-0.5">
               {hoveredField.id in fkRefs ? (
                 <DetailLine
-                  label="References"
-                  value={fkRefs[hoveredField.id] || "—"}
+                  label={FIELD_DETAIL_REFERENCES}
+                  value={fkRefs[hoveredField.id] || FIELD_DETAIL_EMPTY_REF}
                 />
               ) : null}
               <DetailLine
-                label="Default"
-                value={hoveredField.default ?? "Not set"}
+                label={FIELD_DETAIL_DEFAULT}
+                value={hoveredField.default ?? FIELD_DETAIL_NOT_SET}
               />
               <DetailLine
-                label="Comment"
-                value={hoveredField.comment ?? "Not set"}
+                label={FIELD_DETAIL_COMMENT}
+                value={hoveredField.comment ?? FIELD_DETAIL_NOT_SET}
               />
             </div>
           </div>

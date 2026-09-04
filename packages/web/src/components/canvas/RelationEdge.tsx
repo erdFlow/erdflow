@@ -9,6 +9,15 @@ import {
 } from "@xyflow/react"
 import { memo, useState } from "react"
 import {
+  EDGE_BADGE_OFFSET,
+  EDGE_HIT_STROKE_WIDTH,
+  EDGE_HOVER_ANIMATION,
+  EDGE_HOVER_DASHARRAY,
+  EDGE_HOVER_STROKE,
+  EDGE_HOVER_STROKE_WIDTH,
+  EDGE_SMOOTH_STEP_RADIUS,
+} from "../../data/constants.js"
+import {
   anchor,
   buildPathFromPoints,
   cardinalitySymbols,
@@ -32,7 +41,7 @@ function EndpointBadge({
     <div
       className="pointer-events-none absolute flex size-4 items-center justify-center rounded-full bg-foreground font-semibold text-[9px] text-background ring-2 ring-background"
       style={{
-        transform: `translate(-50%, -50%) translate(${x + dir * 11}px, ${y}px)`,
+        transform: `translate(-50%, -50%) translate(${x + dir * EDGE_BADGE_OFFSET}px, ${y}px)`,
       }}
     >
       {label}
@@ -92,7 +101,7 @@ function RelationEdgeComponent({
       targetY: t.y,
       sourcePosition: sourceOnRight ? Position.Right : Position.Left,
       targetPosition: sourceOnRight ? Position.Left : Position.Right,
-      borderRadius: 8,
+      borderRadius: EDGE_SMOOTH_STEP_RADIUS,
     })
   } else if (edgeData?.points && edgeData.points.length > 0) {
     const points = edgeData.points
@@ -126,10 +135,10 @@ function RelationEdgeComponent({
 
   const hoverStyle = hovered
     ? {
-        stroke: "#3b82f6",
-        strokeWidth: 2.5,
-        strokeDasharray: "6 5",
-        animation: "dashdraw 0.5s linear infinite",
+        stroke: EDGE_HOVER_STROKE,
+        strokeWidth: EDGE_HOVER_STROKE_WIDTH,
+        strokeDasharray: EDGE_HOVER_DASHARRAY,
+        animation: EDGE_HOVER_ANIMATION,
       }
     : null
 
@@ -147,7 +156,7 @@ function RelationEdgeComponent({
         d={routedPath}
         fill="none"
         stroke="transparent"
-        strokeWidth={24}
+        strokeWidth={EDGE_HIT_STROKE_WIDTH}
         strokeLinecap="round"
         style={{ pointerEvents: "stroke", cursor: "pointer" }}
         onMouseEnter={() => setHovered(true)}
