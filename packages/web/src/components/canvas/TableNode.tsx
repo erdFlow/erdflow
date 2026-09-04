@@ -1,27 +1,9 @@
 import { type NodeProps, NodeToolbar, Position } from "@xyflow/react"
 import { KeyRoundIcon, Link2Icon } from "lucide-react"
 import { memo, useMemo, useState } from "react"
+import { typeColorClass } from "../../lib/type-color.js"
 import type { TableNodeData } from "../../types/flow-types.js"
 import { DiagramNodeShell } from "./DiagramNodeShell.js"
-
-/** Colour a type token by broad category, roughly matching common ERD tools. */
-function typeColorClass(typeName: string): string {
-  const n = typeName.toLowerCase()
-  if (/(date|time|timestamp|year)/.test(n)) {
-    return "text-cyan-600 dark:text-cyan-400"
-  }
-  if (/(bool)/.test(n)) return "text-green-600 dark:text-green-400"
-  if (/(enum|set)/.test(n)) return "text-violet-600 dark:text-violet-400"
-  if (
-    /(int|float|double|decimal|numeric|real|serial|number|money|bit)/.test(n)
-  ) {
-    return "text-amber-600 dark:text-amber-500"
-  }
-  if (/(char|text|string|uuid|json|blob|binary|clob)/.test(n)) {
-    return "text-orange-600 dark:text-orange-400"
-  }
-  return "text-muted-foreground"
-}
 
 function isAutoIncrement(defaultValue: string | undefined): boolean {
   return /auto_?increment|nextval|identity|autoincrement/i.test(
@@ -46,7 +28,7 @@ function AttrPill({
 }) {
   return (
     <span
-      className={`rounded-md px-2 py-1 font-medium text-[11px] ${pillClass[tone]}`}
+      className={`rounded px-1.5 py-0.5 font-medium text-[10px] leading-none ${pillClass[tone]}`}
     >
       {label}
     </span>
@@ -55,8 +37,8 @@ function AttrPill({
 
 function DetailLine({ label, value }: { label: string; value: string }) {
   return (
-    <p className="text-[13px]">
-      <span className="font-semibold">{label}:</span> {value}
+    <p className="truncate text-[11px] leading-snug text-muted-foreground">
+      <span className="font-medium text-foreground">{label}:</span> {value}
     </p>
   )
 }
@@ -113,22 +95,22 @@ function TableNodeComponent({ data }: NodeProps) {
       <NodeToolbar
         isVisible={hoveredField != null && !nodeData.collapsed}
         position={Position.Right}
-        offset={12}
+        offset={8}
       >
         {hoveredField ? (
-          <div className="w-72 rounded-xl border border-border bg-card p-4 text-card-foreground shadow-lg">
-            <div className="flex items-center justify-between gap-3">
-              <span className="truncate font-semibold text-lg">
+          <div className="w-52 rounded-lg border border-border bg-card px-2.5 py-2 text-card-foreground shadow-md">
+            <div className="flex items-baseline justify-between gap-2">
+              <span className="truncate font-semibold text-sm leading-tight">
                 {hoveredField.name}
               </span>
               <span
-                className={`font-mono text-sm ${typeColorClass(hoveredField.type.name)}`}
+                className={`shrink-0 font-mono text-[11px] ${typeColorClass(hoveredField.type.name)}`}
               >
                 {hoveredField.type.name}
               </span>
             </div>
 
-            <div className="my-3 border-border border-t" />
+            <div className="my-1.5 border-border border-t" />
 
             {(() => {
               const pills: Array<{
@@ -147,7 +129,7 @@ function TableNodeComponent({ data }: NodeProps) {
                 pills.push({ label: "Autoincrement", tone: "green" })
 
               return pills.length > 0 ? (
-                <div className="mb-3 flex flex-wrap gap-2">
+                <div className="mb-1.5 flex flex-wrap gap-1">
                   {pills.map((pill) => (
                     <AttrPill
                       key={pill.label}
@@ -159,7 +141,7 @@ function TableNodeComponent({ data }: NodeProps) {
               ) : null
             })()}
 
-            <div className="space-y-1.5">
+            <div className="space-y-0.5">
               {hoveredField.id in fkRefs ? (
                 <DetailLine
                   label="References"

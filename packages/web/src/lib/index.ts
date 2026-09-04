@@ -41,3 +41,4 @@ export {
   type SchemaSocketMessage,
 } from "./schema-socket.js"
 export { schemaToFlow, updateFlowData } from "./schema-to-flow.js"
+export { typeColorClass } from "./type-color.js"

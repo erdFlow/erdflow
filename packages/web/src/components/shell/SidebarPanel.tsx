@@ -10,7 +10,7 @@ import { SearchFilter } from "../sidebar/SearchFilter.js"
 
 export function SidebarPanel() {
   return (
-    <Sidebar collapsible="icon">
+    <Sidebar collapsible="offcanvas">
       <SidebarHeader>
         <SearchFilter />
       </SidebarHeader>

@@ -1,6 +1,7 @@
 import { Badge } from "@workspace/ui/components/badge"
 import { Button } from "@workspace/ui/components/button"
 import { Separator } from "@workspace/ui/components/separator"
+import { SidebarTrigger } from "@workspace/ui/components/sidebar"
 import { Switch } from "@workspace/ui/components/switch"
 import { Tooltip, TooltipTrigger } from "@workspace/ui/components/tooltip"
 import { FocusIcon, Maximize2Icon, MinusIcon, PlusIcon } from "lucide-react"
@@ -20,12 +21,15 @@ export function Header() {
 
   return (
     <header className="flex flex-wrap items-center gap-4 border-b px-4 py-3">
-      <div className="flex min-w-0 flex-1 flex-col gap-1">
-        <h1 className="font-heading font-medium text-base">erdflow</h1>
-        <div className="flex flex-wrap items-center gap-2">
-          <Badge variant="secondary">{entityCount} tables</Badge>
-          <Badge variant="secondary">{enumCount} enums</Badge>
-          <Badge variant="secondary">{relationCount} relations</Badge>
+      <div className="flex min-w-0 flex-1 items-start gap-2">
+        <SidebarTrigger className="mt-0.5" />
+        <div className="flex min-w-0 flex-col gap-1">
+          <h1 className="font-heading font-medium text-base">erdflow</h1>
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge variant="secondary">{entityCount} tables</Badge>
+            <Badge variant="secondary">{enumCount} enums</Badge>
+            <Badge variant="secondary">{relationCount} relations</Badge>
+          </div>
         </div>
       </div>
 
