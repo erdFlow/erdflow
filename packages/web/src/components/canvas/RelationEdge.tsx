@@ -1,4 +1,4 @@
-import { memo } from "react";
+import { memo, useState } from "react";
 import {
   BaseEdge,
   EdgeLabelRenderer,
@@ -8,55 +8,13 @@ import {
   Position,
   useInternalNode,
 } from "@xyflow/react";
-import { entityFieldCenterY } from "../../lib/node-dimensions.js";
+import {
+  anchor,
+  buildPathFromPoints,
+  cardinalitySymbols,
+  nodeBox,
+} from "../../lib/edge-geometry.js";
 import type { RelationEdgeData } from "../../types/flow-types.js";
-
-/** Endpoint cardinality symbols: "1" for a single side, "n" for a many side. */
-function cardinalitySymbols(cardinality: string): { source: string; target: string } {
-  const [from, to] = cardinality.split("-to-");
-  return {
-    source: from === "many" ? "n" : "1",
-    target: to === "many" ? "n" : "1",
-  };
-}
-
-function buildPathFromPoints(points: Array<{ x: number; y: number }>): string {
-  if (points.length === 0) {
-    return "";
-  }
-
-  const [first, ...rest] = points;
-  return `M ${first!.x},${first!.y} ${rest.map((point) => `L ${point.x},${point.y}`).join(" ")}`;
-}
-
-interface Box {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}
-
-function nodeBox(node: ReturnType<typeof useInternalNode>): Box | null {
-  if (!node) return null;
-  const position = node.internals.positionAbsolute;
-  const width = node.measured?.width ?? (node.width as number | undefined) ?? 220;
-  const height =
-    node.measured?.height ?? (node.height as number | undefined) ?? 80;
-  return { x: position.x, y: position.y, width, height };
-}
-
-/** Anchor point on the nearer vertical edge of a node, at a given field row. */
-function anchor(
-  box: Box,
-  onRight: boolean,
-  fieldIndex: number | undefined,
-): { x: number; y: number } {
-  const x = onRight ? box.x + box.width : box.x;
-  const rawY =
-    fieldIndex != null ? entityFieldCenterY(fieldIndex) : box.height / 2;
-  const y = box.y + Math.min(Math.max(rawY, 8), box.height - 4);
-  return { x, y };
-}
 
 function EndpointBadge({
   x,
@@ -99,8 +57,11 @@ function RelationEdgeComponent({
   const edgeData = data as RelationEdgeData | undefined;
   const sourceBox = nodeBox(useInternalNode(source));
   const targetBox = nodeBox(useInternalNode(target));
+  const [hovered, setHovered] = useState(false);
 
   let routedPath: string;
+  let labelX = (sourceX + targetX) / 2;
+  let labelY = (sourceY + targetY) / 2;
   let sEndX = sourceX;
   let sEndY = sourceY;
   let tEndX = targetX;
@@ -124,7 +85,7 @@ function RelationEdgeComponent({
     tDir = sourceOnRight ? -1 : 1;
     showBadges = true;
 
-    [routedPath] = getSmoothStepPath({
+    [routedPath, labelX, labelY] = getSmoothStepPath({
       sourceX: s.x,
       sourceY: s.y,
       targetX: t.x,
@@ -141,8 +102,11 @@ function RelationEdgeComponent({
     sEndY = first.y;
     tEndX = last.x;
     tEndY = last.y;
+    const mid = edgeData.points[Math.floor(edgeData.points.length / 2)]!;
+    labelX = mid.x;
+    labelY = mid.y;
   } else {
-    [routedPath] = getBezierPath({
+    [routedPath, labelX, labelY] = getBezierPath({
       sourceX,
       sourceY,
       targetX,
@@ -155,14 +119,51 @@ function RelationEdgeComponent({
   const symbols = edgeData?.relation
     ? cardinalitySymbols(edgeData.relation.cardinality)
     : null;
+  const relationName = edgeData?.relation?.name;
+
+  const hoverStyle = hovered
+    ? {
+        stroke: "#3b82f6",
+        strokeWidth: 2.5,
+        strokeDasharray: "6 5",
+        animation: "dashdraw 0.5s linear infinite",
+      }
+    : null;
 
   return (
     <>
-      <BaseEdge id={id} path={routedPath} markerEnd={markerEnd} style={style} />
+      <BaseEdge
+        id={id}
+        path={routedPath}
+        markerEnd={markerEnd}
+        interactionWidth={0}
+        style={{ ...style, ...hoverStyle, pointerEvents: "none" }}
+      />
+      {/* wide transparent hit area on top for hover detection */}
+      <path
+        d={routedPath}
+        fill="none"
+        stroke="transparent"
+        strokeWidth={24}
+        strokeLinecap="round"
+        style={{ pointerEvents: "stroke", cursor: "pointer" }}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+      />
       {symbols && showBadges ? (
         <EdgeLabelRenderer>
           <EndpointBadge x={sEndX} y={sEndY} dir={sDir} label={symbols.source} />
           <EndpointBadge x={tEndX} y={tEndY} dir={tDir} label={symbols.target} />
+          {hovered && relationName ? (
+            <div
+              className="pointer-events-none absolute rounded-md border border-blue-500/40 bg-background px-1.5 py-0.5 text-[11px] font-medium text-blue-600 shadow-sm dark:text-blue-400"
+              style={{
+                transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
+              }}
+            >
+              {relationName}
+            </div>
+          ) : null}
         </EdgeLabelRenderer>
       ) : null}
     </>

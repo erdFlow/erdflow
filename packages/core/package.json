@@ -1,15 +1,49 @@
 {
   "name": "@erdflow/core",
-  "version": "0.0.0",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "typecheck": "tsc --noEmit"
+  "version": "0.1.1",
+  "description": "Universal schema model for erdFlow — shared types, validation, and adapter interfaces",
+  "license": "MIT",
+  "author": "abhimanyujangid",
+  "keywords": [
+    "erd",
+    "database",
+    "schema",
+    "erdflow"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/erdFlow/erdflow.git",
+    "directory": "packages/core"
   },
+  "homepage": "https://github.com/erdFlow/erdflow#readme",
+  "bugs": {
+    "url": "https://github.com/erdFlow/erdflow/issues"
+  },
+  "type": "module",
+  "publishConfig": {
+    "access": "public"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
-    ".": "./src/index.ts"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "prepublishOnly": "pnpm build",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test tests/**/*.test.ts"
   },
   "devDependencies": {
+    "@types/node": "^24",
+    "tsx": "^4.20.6",
     "typescript": "~6"
   }
 }

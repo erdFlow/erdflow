@@ -7,6 +7,7 @@ import {
 } from "@erdflow/layout";
 import type { Edge, Node } from "@xyflow/react";
 import type { RelationEdgeData } from "../types/flow-types.js";
+import { foreignKeyRefs } from "./foreign-key-refs.js";
 import { entityNodeHeight, enumNodeHeight } from "./node-dimensions.js";
 import { resolveRelationHandles } from "./relation-handles.js";
 
@@ -15,37 +16,6 @@ interface BuildFlowGraphOptions {
   layout: LayoutResult;
   manualPositions: Record<string, { x: number; y: number }>;
   collapsedTables: Record<string, boolean>;
-}
-
-/**
- * Map of entityId -> { fieldId: "TargetEntity(targetField)" } for every field
- * that is the "from" side of a relation (i.e. a foreign key). The keys double as
- * the set of FK field ids for that entity.
- */
-export function foreignKeyRefs(
-  schema: UniversalSchema,
-): Map<string, Record<string, string>> {
-  const entityById = new Map(schema.entities.map((entity) => [entity.id, entity]));
-  const out = new Map<string, Record<string, string>>();
-
-  for (const relation of schema.relations) {
-    const toEntity = entityById.get(relation.to.entityId);
-    const fromIds = relation.from.fieldIds ?? [];
-    const toIds = relation.to.fieldIds ?? [];
-    const refs = out.get(relation.from.entityId) ?? {};
-
-    fromIds.forEach((fromId, index) => {
-      const toId = toIds[index] ?? toIds[0];
-      const toField = toEntity?.fields.find((field) => field.id === toId);
-      refs[fromId] = toEntity
-        ? `${toEntity.name}(${toField?.name ?? "id"})`
-        : "";
-    });
-
-    out.set(relation.from.entityId, refs);
-  }
-
-  return out;
 }
 
 export function schemaToFlow({

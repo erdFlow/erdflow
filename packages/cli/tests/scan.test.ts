@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import assert from "node:assert/strict";
 import test from "node:test";
-import { resolveSchemaSource } from "./scan.js";
+import { resolveSchemaSource } from "../src/scan.js";
 
 test("resolveSchemaSource uses explicit --prisma path", async () => {
   const rootDir = await mkdtemp(join(tmpdir(), "erdflow-scan-"));

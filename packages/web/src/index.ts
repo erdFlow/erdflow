@@ -4,4 +4,4 @@ export type {
   CanvasControls,
   ConnectionStatus,
   DiagramState,
-} from "./store/diagram-store.js";
+} from "./types/diagram-store.js";

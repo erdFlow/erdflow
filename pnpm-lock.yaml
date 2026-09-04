@@ -87,18 +87,6 @@ importers:
 
   packages/cli:
     dependencies:
-      '@erdflow/core':
-        specifier: workspace:*
-        version: link:../core
-      '@erdflow/parser-dbml':
-        specifier: workspace:*
-        version: link:../parser-dbml
-      '@erdflow/parser-prisma':
-        specifier: workspace:*
-        version: link:../parser-prisma
-      '@erdflow/parser-sql':
-        specifier: workspace:*
-        version: link:../parser-sql
       '@prisma/internals':
         specifier: ^6.19.0
         version: 6.19.3(typescript@6.0.3)
@@ -115,9 +103,21 @@ importers:
         specifier: ^8.19.0
         version: 8.21.3
     devDependencies:
+      '@erdflow/core':
+        specifier: workspace:*
+        version: link:../core
       '@erdflow/layout':
         specifier: workspace:*
         version: link:../layout
+      '@erdflow/parser-dbml':
+        specifier: workspace:*
+        version: link:../parser-dbml
+      '@erdflow/parser-prisma':
+        specifier: workspace:*
+        version: link:../parser-prisma
+      '@erdflow/parser-sql':
+        specifier: workspace:*
+        version: link:../parser-sql
       '@types/node':
         specifier: ^24
         version: 24.12.4
@@ -136,6 +136,12 @@ importers:
 
   packages/core:
     devDependencies:
+      '@types/node':
+        specifier: ^24
+        version: 24.12.4
+      tsx:
+        specifier: ^4.20.6
+        version: 4.23.13
       typescript:
         specifier: ~6
         version: 6.0.3
@@ -149,9 +155,6 @@ importers:
         specifier: ^0.11.0
         version: 0.11.1
     devDependencies:
-      '@erdflow/parser-dbml':
-        specifier: workspace:*
-        version: link:../parser-dbml
       '@types/node':
         specifier: ^24
         version: 24.12.4

@@ -5,10 +5,10 @@ import {
   printDetectionSummary,
   printParseError,
   printUnsupportedProject,
-} from "./output.js";
+} from "../src/output.js";
 import { createEntityId, createEnumId, createIndexId } from "@erdflow/core";
 import { dbmlAdapter } from "@erdflow/parser-dbml";
-import type { ResolvedSource } from "./scan.js";
+import type { ResolvedSource } from "../src/scan.js";
 
 test("printDetectionSummary includes entity, enum, relation, and index counts", () => {
   const logs: string[] = [];

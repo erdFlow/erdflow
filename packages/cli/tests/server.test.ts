@@ -6,7 +6,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import WebSocket from "ws";
 import { createEntityId } from "@erdflow/core";
-import { createServer } from "./server.js";
+import { createServer } from "../src/server.js";
 
 const fixturePublicDir = join(
   dirname(fileURLToPath(import.meta.url)),
