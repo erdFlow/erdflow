@@ -41,6 +41,8 @@ export const EdgeKind = {
 /** Canvas zoom shortcuts (Mod = ⌘ on macOS, Ctrl on Windows/Linux). */
 export const HOTKEY_ZOOM_IN = "Mod+="
 export const HOTKEY_ZOOM_OUT = "Mod+-"
+export const HOTKEY_FIT_VIEW = "Mod+0"
+export const HOTKEY_CLEAR_FOCUS = "Escape"
 
 export const SQL_VIEW_WIDTH_DEFAULT = 384
 export const SQL_VIEW_WIDTH_MIN = 280

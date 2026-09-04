@@ -23,6 +23,8 @@ import {
 } from "lucide-react"
 import {
   BRAND_NAME,
+  HOTKEY_CLEAR_FOCUS,
+  HOTKEY_FIT_VIEW,
   HOTKEY_ZOOM_IN,
   HOTKEY_ZOOM_OUT,
 } from "../../data/constants.js"
@@ -98,6 +100,8 @@ export function Header() {
 
   const zoomInShortcut = formatForDisplay(HOTKEY_ZOOM_IN)
   const zoomOutShortcut = formatForDisplay(HOTKEY_ZOOM_OUT)
+  const fitViewShortcut = formatForDisplay(HOTKEY_FIT_VIEW)
+  const clearFocusShortcut = formatForDisplay(HOTKEY_CLEAR_FOCUS)
 
   return (
     <header className="flex items-center gap-4 border-b px-4 py-3">
@@ -192,6 +196,7 @@ export function Header() {
           >
             <Maximize2Icon />
             Fit view
+            <DropdownMenuShortcut>{fitViewShortcut}</DropdownMenuShortcut>
           </DropdownMenuItem>
 
           {focusedEntityId ? (
@@ -203,6 +208,9 @@ export function Header() {
               >
                 <FocusIcon />
                 Clear focus
+                <DropdownMenuShortcut>
+                  {clearFocusShortcut}
+                </DropdownMenuShortcut>
               </DropdownMenuItem>
             </>
           ) : null}
