@@ -152,7 +152,7 @@ function SchemaCanvasInner() {
 
   return (
     <ReactFlow
-      className="size-full bg-background"
+      className="size-full bg-background [&_.react-flow__edgelabel-renderer]:z-[1000]"
       colorMode={resolvedTheme}
       nodes={displayNodes}
       edges={displayEdges}

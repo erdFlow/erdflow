@@ -23,6 +23,8 @@ import {
   cardinalitySymbols,
   nodeBox,
 } from "../../lib/edge-geometry.js"
+import { formatRelationLabel } from "../../lib/format-relation.js"
+import { useDiagramStore } from "../../store/diagram-store.js"
 import type { RelationEdgeData } from "../../types/flow-types.js"
 
 function EndpointBadge({
@@ -30,17 +32,20 @@ function EndpointBadge({
   y,
   dir,
   label,
+  opacity = 1,
 }: {
   x: number
   y: number
   /** -1 = endpoint on node's left edge, +1 = right edge. Badge sits outside. */
   dir: number
   label: string
+  opacity?: number
 }) {
   return (
     <div
       className="pointer-events-none absolute flex size-4 items-center justify-center rounded-full bg-foreground font-semibold text-[9px] text-background ring-2 ring-background"
       style={{
+        opacity,
         transform: `translate(-50%, -50%) translate(${x + dir * EDGE_BADGE_OFFSET}px, ${y}px)`,
       }}
     >
@@ -128,28 +133,47 @@ function RelationEdgeComponent({
     })
   }
 
+  const schema = useDiagramStore((state) => state.schema)
   const symbols = edgeData?.relation
     ? cardinalitySymbols(edgeData.relation.cardinality)
     : null
-  const relationName = edgeData?.relation?.name
+  const relationLabel =
+    edgeData?.relation && schema
+      ? formatRelationLabel(edgeData.relation, schema.entities)
+      : (edgeData?.relation?.name ?? null)
+  const opacity = typeof style?.opacity === "number" ? style.opacity : 1
+  const isDimmed = opacity < 1
 
-  const hoverStyle = hovered
+  const hoverStyle =
+    hovered && !isDimmed
+      ? {
+          stroke: EDGE_HOVER_STROKE,
+          strokeWidth: EDGE_HOVER_STROKE_WIDTH,
+          strokeDasharray: EDGE_HOVER_DASHARRAY,
+          animation: EDGE_HOVER_ANIMATION,
+        }
+      : null
+
+  const dimmedStyle = isDimmed
     ? {
-        stroke: EDGE_HOVER_STROKE,
-        strokeWidth: EDGE_HOVER_STROKE_WIDTH,
-        strokeDasharray: EDGE_HOVER_DASHARRAY,
-        animation: EDGE_HOVER_ANIMATION,
+        opacity,
+        stroke: "var(--muted-foreground)",
       }
-    : null
+    : { opacity }
 
   return (
     <>
       <BaseEdge
         id={id}
         path={routedPath}
-        markerEnd={markerEnd}
+        markerEnd={isDimmed ? undefined : markerEnd}
         interactionWidth={0}
-        style={{ ...style, ...hoverStyle, pointerEvents: "none" }}
+        style={{
+          ...style,
+          ...dimmedStyle,
+          ...hoverStyle,
+          pointerEvents: "none",
+        }}
       />
       {/* wide transparent hit area on top for hover detection */}
       <path
@@ -158,7 +182,10 @@ function RelationEdgeComponent({
         stroke="transparent"
         strokeWidth={EDGE_HIT_STROKE_WIDTH}
         strokeLinecap="round"
-        style={{ pointerEvents: "stroke", cursor: "pointer" }}
+        style={{
+          pointerEvents: isDimmed ? "none" : "stroke",
+          cursor: "pointer",
+        }}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
       />
@@ -169,21 +196,23 @@ function RelationEdgeComponent({
             y={sEndY}
             dir={sDir}
             label={symbols.source}
+            opacity={opacity}
           />
           <EndpointBadge
             x={tEndX}
             y={tEndY}
             dir={tDir}
             label={symbols.target}
+            opacity={opacity}
           />
-          {hovered && relationName ? (
+          {hovered && relationLabel && !isDimmed ? (
             <div
-              className="pointer-events-none absolute rounded-md border border-blue-500/40 bg-background px-1.5 py-0.5 font-medium text-[11px] text-blue-600 shadow-sm dark:text-blue-400"
+              className="pointer-events-none absolute z-[10000] whitespace-nowrap rounded-md border border-blue-500/40 bg-background px-2.5 py-1 font-medium text-[11px] text-blue-600 shadow-md dark:text-blue-400"
               style={{
                 transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
               }}
             >
-              {relationName}
+              {relationLabel}
             </div>
           ) : null}
         </EdgeLabelRenderer>
