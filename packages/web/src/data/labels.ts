@@ -62,6 +62,7 @@ export const RELATIONSHIP_TABLE_TITLE = "Relationships"
 export const RELATIONSHIP_TABLE_EMPTY_TITLE = "No relationships"
 export const RELATIONSHIP_TABLE_EMPTY_DESCRIPTION =
   "This table has no relations to other tables."
+export const RELATIONSHIP_TABLE_CLOSE_LABEL = "Close Relationship Table"
 export const SQL_VIEW_EMPTY_LABEL = "Select a table to view SQL"
 export const SQL_VIEW_EMPTY_DESCRIPTION =
   "Click a table on the canvas or in the sidebar."

@@ -1,3 +1,4 @@
+import { Button } from "@workspace/ui/components/button"
 import {
   Empty,
   EmptyDescription,
@@ -5,9 +6,10 @@ import {
   EmptyTitle,
 } from "@workspace/ui/components/empty"
 import { ScrollArea } from "@workspace/ui/components/scroll-area"
-import { ArrowRightIcon } from "lucide-react"
+import { ArrowRightIcon, XIcon } from "lucide-react"
 import { useMemo } from "react"
 import {
+  RELATIONSHIP_TABLE_CLOSE_LABEL,
   RELATIONSHIP_TABLE_EMPTY_DESCRIPTION,
   RELATIONSHIP_TABLE_EMPTY_TITLE,
   RELATIONSHIP_TABLE_TITLE,
@@ -91,6 +93,9 @@ function RelationMappingRow({
 export function RelationshipTablePanel() {
   const schema = useDiagramStore((state) => state.schema)
   const focusedEntityId = useDiagramStore((state) => state.focusedEntityId)
+  const setShowRelationshipTable = useDiagramStore(
+    (state) => state.setShowRelationshipTable
+  )
 
   const entity = useMemo(() => {
     if (!schema || !focusedEntityId) {
@@ -115,9 +120,21 @@ export function RelationshipTablePanel() {
       className="flex w-80 flex-col overflow-hidden rounded-lg border bg-background/95 shadow-md backdrop-blur-sm"
       aria-label={SHOW_RELATIONSHIP_TABLE_LABEL}
     >
-      <div className="shrink-0 border-b bg-muted/40 px-3 py-2">
-        <p className="font-medium text-sm">{RELATIONSHIP_TABLE_TITLE}</p>
-        <p className="truncate text-muted-foreground text-xs">{entity.name}</p>
+      <div className="flex shrink-0 items-start justify-between gap-2 border-b bg-muted/40 px-3 py-2">
+        <div className="min-w-0">
+          <p className="font-medium text-sm">{RELATIONSHIP_TABLE_TITLE}</p>
+          <p className="truncate text-muted-foreground text-xs">{entity.name}</p>
+        </div>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon-sm"
+          className="shrink-0"
+          onClick={() => setShowRelationshipTable(false)}
+          aria-label={RELATIONSHIP_TABLE_CLOSE_LABEL}
+        >
+          <XIcon />
+        </Button>
       </div>
 
       {rows.length === 0 ? (
