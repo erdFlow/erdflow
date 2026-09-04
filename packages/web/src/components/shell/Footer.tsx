@@ -10,8 +10,7 @@ export function Footer() {
   const schema = useDiagramStore((state) => state.schema)
   const zoom = useDiagramStore((state) => state.zoom)
 
-  const sourceLabel =
-    schema?.meta?.source ?? schema?.meta?.adapter ?? UNKNOWN_SOURCE_LABEL
+  const sourceLabel = schema?.meta?.source ?? UNKNOWN_SOURCE_LABEL
   const zoomPercent = `${Math.round(zoom * 100)}%`
 
   return (

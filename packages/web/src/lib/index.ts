@@ -15,6 +15,7 @@ export {
 } from "./enum-usages.js"
 export { getConnectedIds } from "./focus-utils.js"
 export { foreignKeyRefs } from "./foreign-key-refs.js"
+export { formatAdapterLabel } from "./format-adapter.js"
 export {
   type MergeSchemaOptions,
   type MergeSchemaResult,

@@ -10,6 +10,8 @@ export const CONNECTION_STATUS_LABELS: Record<ConnectionStatus, string> = {
 }
 
 export const UNKNOWN_SOURCE_LABEL = "Unknown source"
+export const SCHEMA_SOURCE_ARIA_LABEL = "Schema source"
+export const SCHEMA_VERSION_ARIA_LABEL = "Schema version"
 
 export const SEARCH_PLACEHOLDER = "Search tables and enums"
 export const SEARCH_ARIA_LABEL = "Search tables and enums"

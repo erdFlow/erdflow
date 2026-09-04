@@ -25,6 +25,8 @@ export interface DiagramState {
   showMinimap: boolean
   showSqlView: boolean
   sqlViewWidth: number
+  /** Selected schema version for future multi-version filtering. */
+  selectedSchemaVersion: string | null
   zoom: number
   collapsedTables: Record<string, boolean>
   manualPositions: Record<string, { x: number; y: number }>
@@ -38,6 +40,7 @@ export interface DiagramState {
   setShowMinimap: (show: boolean) => void
   setShowSqlView: (show: boolean) => void
   setSqlViewWidth: (width: number) => void
+  setSelectedSchemaVersion: (version: string | null) => void
   setZoom: (zoom: number) => void
   toggleTableCollapsed: (entityId: string) => void
   onNodesChange: (changes: NodeChange[]) => void

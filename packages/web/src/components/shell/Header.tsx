@@ -40,6 +40,7 @@ import {
 } from "../../data/labels.js"
 import { useDiagramStore } from "../../store/diagram-store.js"
 import { useTheme } from "../theme-provider.js"
+import { SourceSelector } from "./SourceSelector.js"
 
 function ViewToggleItem({
   label,
@@ -110,112 +111,115 @@ export function Header() {
         <h1 className="font-heading font-medium text-base">{BRAND_NAME}</h1>
       </div>
 
-      <DropdownMenuTrigger>
-        <Button variant="ghost" size="icon-sm" aria-label="Actions">
-          <MoreVerticalIcon />
-        </Button>
-        <DropdownMenu placement="bottom end" className="min-w-44">
-          <DropdownMenuSub>
-            <DropdownMenuSubTrigger textValue="View">
-              View
-            </DropdownMenuSubTrigger>
-            <DropdownMenuSubContent placement="left top" className="min-w-56">
-              <ViewToggleItem
-                label={SHOW_RELATIONSHIPS_LABEL}
-                checked={showRelations}
-                onToggle={() => setShowRelations(!showRelations)}
-              />
-              <ViewToggleItem
-                label={SHOW_MINIMAP_LABEL}
-                checked={showMinimap}
-                onToggle={() => setShowMinimap(!showMinimap)}
-              />
-              <ViewToggleItem
-                label={SHOW_SQL_VIEW_LABEL}
-                checked={showSqlView}
-                onToggle={() => setShowSqlView(!showSqlView)}
-              />
-            </DropdownMenuSubContent>
-          </DropdownMenuSub>
+      <div className="flex shrink-0 items-center gap-2">
+        <SourceSelector />
+        <DropdownMenuTrigger>
+          <Button variant="ghost" size="icon-sm" aria-label="Actions">
+            <MoreVerticalIcon />
+          </Button>
+          <DropdownMenu placement="bottom end" className="min-w-44">
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger textValue="View">
+                View
+              </DropdownMenuSubTrigger>
+              <DropdownMenuSubContent placement="left top" className="min-w-56">
+                <ViewToggleItem
+                  label={SHOW_RELATIONSHIPS_LABEL}
+                  checked={showRelations}
+                  onToggle={() => setShowRelations(!showRelations)}
+                />
+                <ViewToggleItem
+                  label={SHOW_MINIMAP_LABEL}
+                  checked={showMinimap}
+                  onToggle={() => setShowMinimap(!showMinimap)}
+                />
+                <ViewToggleItem
+                  label={SHOW_SQL_VIEW_LABEL}
+                  checked={showSqlView}
+                  onToggle={() => setShowSqlView(!showSqlView)}
+                />
+              </DropdownMenuSubContent>
+            </DropdownMenuSub>
 
-          <DropdownMenuSub>
-            <DropdownMenuSubTrigger textValue={SETTINGS_LABEL}>
-              {SETTINGS_LABEL}
-            </DropdownMenuSubTrigger>
-            <DropdownMenuSubContent placement="left top" className="min-w-44">
-              <DropdownMenuSub>
-                <DropdownMenuSubTrigger textValue={THEME_LABEL}>
-                  {THEME_LABEL}
-                </DropdownMenuSubTrigger>
-                <DropdownMenuSubContent
-                  placement="left top"
-                  className="min-w-40"
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger textValue={SETTINGS_LABEL}>
+                {SETTINGS_LABEL}
+              </DropdownMenuSubTrigger>
+              <DropdownMenuSubContent placement="left top" className="min-w-44">
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger textValue={THEME_LABEL}>
+                    {THEME_LABEL}
+                  </DropdownMenuSubTrigger>
+                  <DropdownMenuSubContent
+                    placement="left top"
+                    className="min-w-40"
+                  >
+                    <ThemeOption
+                      label={THEME_LIGHT_LABEL}
+                      selected={theme === "light"}
+                      onSelect={() => setTheme("light")}
+                    />
+                    <ThemeOption
+                      label={THEME_DARK_LABEL}
+                      selected={theme === "dark"}
+                      onSelect={() => setTheme("dark")}
+                    />
+                    <ThemeOption
+                      label={THEME_SYSTEM_LABEL}
+                      selected={theme === "system"}
+                      onSelect={() => setTheme("system")}
+                    />
+                  </DropdownMenuSubContent>
+                </DropdownMenuSub>
+              </DropdownMenuSubContent>
+            </DropdownMenuSub>
+
+            <DropdownMenuSeparator />
+
+            <DropdownMenuLabel>Canvas</DropdownMenuLabel>
+            <DropdownMenuItem
+              textValue="Zoom in"
+              onAction={() => canvasControls?.zoomIn()}
+            >
+              <PlusIcon />
+              Zoom in
+              <DropdownMenuShortcut>{zoomInShortcut}</DropdownMenuShortcut>
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              textValue="Zoom out"
+              onAction={() => canvasControls?.zoomOut()}
+            >
+              <MinusIcon />
+              Zoom out
+              <DropdownMenuShortcut>{zoomOutShortcut}</DropdownMenuShortcut>
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              textValue="Fit view"
+              onAction={() => canvasControls?.fitView()}
+            >
+              <Maximize2Icon />
+              Fit view
+              <DropdownMenuShortcut>{fitViewShortcut}</DropdownMenuShortcut>
+            </DropdownMenuItem>
+
+            {focusedEntityId ? (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  textValue="Clear focus"
+                  onAction={() => clearFocus()}
                 >
-                  <ThemeOption
-                    label={THEME_LIGHT_LABEL}
-                    selected={theme === "light"}
-                    onSelect={() => setTheme("light")}
-                  />
-                  <ThemeOption
-                    label={THEME_DARK_LABEL}
-                    selected={theme === "dark"}
-                    onSelect={() => setTheme("dark")}
-                  />
-                  <ThemeOption
-                    label={THEME_SYSTEM_LABEL}
-                    selected={theme === "system"}
-                    onSelect={() => setTheme("system")}
-                  />
-                </DropdownMenuSubContent>
-              </DropdownMenuSub>
-            </DropdownMenuSubContent>
-          </DropdownMenuSub>
-
-          <DropdownMenuSeparator />
-
-          <DropdownMenuLabel>Canvas</DropdownMenuLabel>
-          <DropdownMenuItem
-            textValue="Zoom in"
-            onAction={() => canvasControls?.zoomIn()}
-          >
-            <PlusIcon />
-            Zoom in
-            <DropdownMenuShortcut>{zoomInShortcut}</DropdownMenuShortcut>
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            textValue="Zoom out"
-            onAction={() => canvasControls?.zoomOut()}
-          >
-            <MinusIcon />
-            Zoom out
-            <DropdownMenuShortcut>{zoomOutShortcut}</DropdownMenuShortcut>
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            textValue="Fit view"
-            onAction={() => canvasControls?.fitView()}
-          >
-            <Maximize2Icon />
-            Fit view
-            <DropdownMenuShortcut>{fitViewShortcut}</DropdownMenuShortcut>
-          </DropdownMenuItem>
-
-          {focusedEntityId ? (
-            <>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                textValue="Clear focus"
-                onAction={() => clearFocus()}
-              >
-                <FocusIcon />
-                Clear focus
-                <DropdownMenuShortcut>
-                  {clearFocusShortcut}
-                </DropdownMenuShortcut>
-              </DropdownMenuItem>
-            </>
-          ) : null}
-        </DropdownMenu>
-      </DropdownMenuTrigger>
+                  <FocusIcon />
+                  Clear focus
+                  <DropdownMenuShortcut>
+                    {clearFocusShortcut}
+                  </DropdownMenuShortcut>
+                </DropdownMenuItem>
+              </>
+            ) : null}
+          </DropdownMenu>
+        </DropdownMenuTrigger>
+      </div>
     </header>
   )
 }

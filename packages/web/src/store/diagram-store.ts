@@ -25,6 +25,7 @@ export const useDiagramStore = create<DiagramState>((set, get) => ({
   showMinimap: false,
   showSqlView: false,
   sqlViewWidth: SQL_VIEW_WIDTH_DEFAULT,
+  selectedSchemaVersion: null,
   zoom: 1,
   collapsedTables: {},
   manualPositions: {},
@@ -45,6 +46,10 @@ export const useDiagramStore = create<DiagramState>((set, get) => ({
       nodes: merged.nodes,
       edges: merged.edges,
       error: null,
+      selectedSchemaVersion:
+        schema.meta?.version ??
+        schema.meta?.versions?.[0] ??
+        state.selectedSchemaVersion,
     })
   },
 
@@ -56,6 +61,8 @@ export const useDiagramStore = create<DiagramState>((set, get) => ({
   setShowMinimap: (showMinimap) => set({ showMinimap }),
   setShowSqlView: (showSqlView) => set({ showSqlView }),
   setSqlViewWidth: (width) => set({ sqlViewWidth: clampSqlViewWidth(width) }),
+  setSelectedSchemaVersion: (selectedSchemaVersion) =>
+    set({ selectedSchemaVersion }),
   setZoom: (zoom) => set({ zoom }),
   toggleTableCollapsed: (entityId) =>
     set((state) => {

@@ -79,6 +79,10 @@ export interface Constraint {
 export interface SchemaMeta {
   source?: string
   adapter?: string
+  /** Active schema version label (e.g. "v1", "2024.1"), when available. */
+  version?: string
+  /** Available versions for filtering; when length > 1 the UI shows a dropdown. */
+  versions?: string[]
 }
 
 export interface UniversalSchema {
