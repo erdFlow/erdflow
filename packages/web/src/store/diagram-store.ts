@@ -1,8 +1,17 @@
 import { ENTITY_HEADER_HEIGHT } from "@erdflow/layout"
 import { applyNodeChanges } from "@xyflow/react"
 import { create } from "zustand"
+import {
+  SQL_VIEW_WIDTH_DEFAULT,
+  SQL_VIEW_WIDTH_MAX,
+  SQL_VIEW_WIDTH_MIN,
+} from "../data/constants.js"
 import { mergeSchemaUpdate } from "../lib/merge-schema.js"
 import type { DiagramState } from "../types/diagram-store.js"
+
+function clampSqlViewWidth(width: number): number {
+  return Math.min(SQL_VIEW_WIDTH_MAX, Math.max(SQL_VIEW_WIDTH_MIN, width))
+}
 
 export const useDiagramStore = create<DiagramState>((set, get) => ({
   schema: null,
@@ -15,6 +24,7 @@ export const useDiagramStore = create<DiagramState>((set, get) => ({
   showRelations: true,
   showMinimap: false,
   showSqlView: false,
+  sqlViewWidth: SQL_VIEW_WIDTH_DEFAULT,
   zoom: 1,
   collapsedTables: {},
   manualPositions: {},
@@ -45,6 +55,7 @@ export const useDiagramStore = create<DiagramState>((set, get) => ({
   setShowRelations: (showRelations) => set({ showRelations }),
   setShowMinimap: (showMinimap) => set({ showMinimap }),
   setShowSqlView: (showSqlView) => set({ showSqlView }),
+  setSqlViewWidth: (width) => set({ sqlViewWidth: clampSqlViewWidth(width) }),
   setZoom: (zoom) => set({ zoom }),
   toggleTableCollapsed: (entityId) =>
     set((state) => {

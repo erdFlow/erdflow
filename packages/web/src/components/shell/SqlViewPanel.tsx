@@ -57,7 +57,7 @@ export function SqlViewPanel() {
 
   return (
     <aside
-      className="flex w-96 min-w-80 shrink-0 flex-col border-l bg-background"
+      className="flex size-full min-h-0 flex-col border-l bg-background"
       aria-label={SHOW_SQL_VIEW_LABEL}
     >
       <div className="flex h-12 shrink-0 items-center justify-between gap-2 border-b px-3">

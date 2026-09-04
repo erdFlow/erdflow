@@ -24,6 +24,7 @@ export interface DiagramState {
   showRelations: boolean
   showMinimap: boolean
   showSqlView: boolean
+  sqlViewWidth: number
   zoom: number
   collapsedTables: Record<string, boolean>
   manualPositions: Record<string, { x: number; y: number }>
@@ -36,6 +37,7 @@ export interface DiagramState {
   setShowRelations: (show: boolean) => void
   setShowMinimap: (show: boolean) => void
   setShowSqlView: (show: boolean) => void
+  setSqlViewWidth: (width: number) => void
   setZoom: (zoom: number) => void
   toggleTableCollapsed: (entityId: string) => void
   onNodesChange: (changes: NodeChange[]) => void

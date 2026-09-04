@@ -65,3 +65,9 @@ export const THEME_LABEL = "Theme"
 export const THEME_LIGHT_LABEL = "Light"
 export const THEME_DARK_LABEL = "Dark"
 export const THEME_SYSTEM_LABEL = "System"
+
+export const ERROR_BOUNDARY_TITLE = "Something went wrong"
+export const ERROR_BOUNDARY_DESCRIPTION =
+  "The visualizer hit an unexpected error. Try again, or reload the page."
+export const ERROR_BOUNDARY_RETRY_LABEL = "Try again"
+export const ERROR_BOUNDARY_RELOAD_LABEL = "Reload page"

@@ -42,5 +42,9 @@ export const EdgeKind = {
 export const HOTKEY_ZOOM_IN = "Mod+="
 export const HOTKEY_ZOOM_OUT = "Mod+-"
 
+export const SQL_VIEW_WIDTH_DEFAULT = 384
+export const SQL_VIEW_WIDTH_MIN = 280
+export const SQL_VIEW_WIDTH_MAX = 720
+
 export type NodeKindValue = (typeof NodeKind)[keyof typeof NodeKind]
 export type EdgeKindValue = (typeof EdgeKind)[keyof typeof EdgeKind]
