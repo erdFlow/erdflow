@@ -57,6 +57,11 @@ export function enumUsedByLabel(refs: string[]): string {
 export const SHOW_RELATIONSHIPS_LABEL = "Show relationships"
 export const SHOW_MINIMAP_LABEL = "Show minimap"
 export const SHOW_SQL_VIEW_LABEL = "SQL View"
+export const SHOW_RELATIONSHIP_TABLE_LABEL = "Relationship Table"
+export const RELATIONSHIP_TABLE_TITLE = "Relationships"
+export const RELATIONSHIP_TABLE_EMPTY_TITLE = "No relationships"
+export const RELATIONSHIP_TABLE_EMPTY_DESCRIPTION =
+  "This table has no relations to other tables."
 export const SQL_VIEW_EMPTY_LABEL = "Select a table to view SQL"
 export const SQL_VIEW_EMPTY_DESCRIPTION =
   "Click a table on the canvas or in the sidebar."

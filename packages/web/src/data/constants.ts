@@ -8,6 +8,7 @@ export const SCHEMA_RECONNECT_MS = 1000
 export const UNKNOWN_SCHEMA_ERROR = "Unknown schema error"
 
 export const FIT_VIEW_PADDING = 0.2
+export const CANVAS_MIN_ZOOM = 0.2
 export const FOCUS_NODE_OPACITY = 0.25
 export const FOCUS_EDGE_OPACITY = 0.2
 export const CANVAS_MIN_HEIGHT_CLASS = "min-h-[480px]"

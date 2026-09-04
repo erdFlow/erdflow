@@ -24,6 +24,7 @@ export interface DiagramState {
   showRelations: boolean
   showMinimap: boolean
   showSqlView: boolean
+  showRelationshipTable: boolean
   sqlViewWidth: number
   /** Selected schema version for future multi-version filtering. */
   selectedSchemaVersion: string | null
@@ -39,6 +40,7 @@ export interface DiagramState {
   setShowRelations: (show: boolean) => void
   setShowMinimap: (show: boolean) => void
   setShowSqlView: (show: boolean) => void
+  setShowRelationshipTable: (show: boolean) => void
   setSqlViewWidth: (width: number) => void
   setSelectedSchemaVersion: (version: string | null) => void
   setZoom: (zoom: number) => void

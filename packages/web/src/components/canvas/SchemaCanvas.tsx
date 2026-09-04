@@ -12,6 +12,7 @@ import { useCallback, useEffect, useMemo } from "react"
 import "@xyflow/react/dist/style.css"
 import {
   CANVAS_MIN_HEIGHT_CLASS,
+  CANVAS_MIN_ZOOM,
   FIT_VIEW_PADDING,
   FOCUS_EDGE_OPACITY,
   FOCUS_NODE_OPACITY,
@@ -159,6 +160,7 @@ function SchemaCanvasInner() {
       nodeTypes={nodeTypes}
       edgeTypes={edgeTypes}
       fitView
+      minZoom={CANVAS_MIN_ZOOM}
       panOnScroll
       zoomOnScroll
       nodesDraggable

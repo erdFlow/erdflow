@@ -7,6 +7,11 @@ export {
   type NodeBox,
   nodeBox,
 } from "./edge-geometry.js"
+export {
+  type EntityRelationRow,
+  formatEntityRelationRow,
+  getEntityRelationRows,
+} from "./entity-relations.js"
 export { entityToSql } from "./entity-to-sql.js"
 export {
   type EnumUsage,

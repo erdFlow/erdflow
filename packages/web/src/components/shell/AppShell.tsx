@@ -19,6 +19,7 @@ import { useDiagramStore } from "../../store/diagram-store.js"
 import { SchemaCanvas } from "../canvas/SchemaCanvas.js"
 import { Footer } from "./Footer.js"
 import { Header } from "./Header.js"
+import { RelationshipTablePanel } from "./RelationshipTablePanel.js"
 import { SidebarPanel } from "./SidebarPanel.js"
 import { SqlViewPanel } from "./SqlViewPanel.js"
 
@@ -42,8 +43,9 @@ function SqlResizableLayout() {
         minSize="30%"
         className="min-h-0 min-w-0"
       >
-        <div className="flex size-full min-h-0 flex-col">
+        <div className="relative flex size-full min-h-0 flex-col">
           <SchemaCanvas />
+          <RelationshipTableOverlay />
         </div>
       </ResizablePanel>
       <ResizableHandle withHandle />
@@ -68,6 +70,25 @@ function SqlResizableLayout() {
   )
 }
 
+function RelationshipTableOverlay() {
+  const showRelationshipTable = useDiagramStore(
+    (state) => state.showRelationshipTable
+  )
+  const focusedEntityId = useDiagramStore((state) => state.focusedEntityId)
+
+  if (!(showRelationshipTable && focusedEntityId)) {
+    return null
+  }
+
+  return (
+    <div className="pointer-events-none absolute top-3 right-3 z-20">
+      <div className="pointer-events-auto">
+        <RelationshipTablePanel />
+      </div>
+    </div>
+  )
+}
+
 export function AppShell() {
   const error = useDiagramStore((state) => state.error)
   const showSqlView = useDiagramStore((state) => state.showSqlView)
@@ -84,12 +105,13 @@ export function AppShell() {
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           ) : null}
-          <div className="flex min-h-0 flex-1 flex-col">
+          <div className="relative flex min-h-0 flex-1 flex-col">
             {showSqlView ? (
               <SqlResizableLayout />
             ) : (
-              <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+              <div className="relative flex min-h-0 min-w-0 flex-1 flex-col">
                 <SchemaCanvas />
+                <RelationshipTableOverlay />
               </div>
             )}
           </div>
