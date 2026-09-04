@@ -1,4 +1,3 @@
-/* eslint-disable react-refresh/only-export-components */
 import * as React from "react"
 
 type Theme = "dark" | "light" | "system"
@@ -13,6 +12,7 @@ type ThemeProviderProps = {
 
 type ThemeProviderState = {
   theme: Theme
+  resolvedTheme: ResolvedTheme
   setTheme: (theme: Theme) => void
 }
 
@@ -93,6 +93,10 @@ export function ThemeProvider({
     return defaultTheme
   })
 
+  const [resolvedTheme, setResolvedTheme] = React.useState<ResolvedTheme>(() =>
+    theme === "system" ? getSystemTheme() : theme
+  )
+
   const setTheme = React.useCallback(
     (nextTheme: Theme) => {
       localStorage.setItem(storageKey, nextTheme)
@@ -104,14 +108,14 @@ export function ThemeProvider({
   const applyTheme = React.useCallback(
     (nextTheme: Theme) => {
       const root = document.documentElement
-      const resolvedTheme =
-        nextTheme === "system" ? getSystemTheme() : nextTheme
+      const nextResolved = nextTheme === "system" ? getSystemTheme() : nextTheme
       const restoreTransitions = disableTransitionOnChange
         ? disableTransitionsTemporarily()
         : null
 
       root.classList.remove("light", "dark")
-      root.classList.add(resolvedTheme)
+      root.classList.add(nextResolved)
+      setResolvedTheme(nextResolved)
 
       if (restoreTransitions) {
         restoreTransitions()
@@ -207,9 +211,10 @@ export function ThemeProvider({
   const value = React.useMemo(
     () => ({
       theme,
+      resolvedTheme,
       setTheme,
     }),
-    [theme, setTheme]
+    [theme, resolvedTheme, setTheme]
   )
 
   return (
@@ -219,7 +224,7 @@ export function ThemeProvider({
   )
 }
 
-export const useTheme = () => {
+export function useTheme() {
   const context = React.useContext(ThemeProviderContext)
 
   if (context === undefined) {

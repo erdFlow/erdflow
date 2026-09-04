@@ -2,6 +2,7 @@ import { HotkeysProvider } from "@tanstack/react-hotkeys"
 import { useCanvasHotkeys } from "../hooks/use-canvas-hotkeys.js"
 import { useSchemaSocket } from "../hooks/use-schema-socket.js"
 import { AppShell } from "./shell/AppShell.js"
+import { ThemeProvider } from "./theme-provider.js"
 
 function VisualizerApp() {
   useSchemaSocket()
@@ -11,12 +12,14 @@ function VisualizerApp() {
 
 export function ErdflowVisualizer() {
   return (
-    <HotkeysProvider
-      defaultOptions={{
-        hotkey: { preventDefault: true, ignoreInputs: true },
-      }}
-    >
-      <VisualizerApp />
-    </HotkeysProvider>
+    <ThemeProvider>
+      <HotkeysProvider
+        defaultOptions={{
+          hotkey: { preventDefault: true, ignoreInputs: true },
+        }}
+      >
+        <VisualizerApp />
+      </HotkeysProvider>
+    </ThemeProvider>
   )
 }

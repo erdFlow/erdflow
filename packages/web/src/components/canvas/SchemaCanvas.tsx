@@ -22,18 +22,32 @@ import type { DiagramNodeData } from "../../types/flow-types.js"
 import { edgeTypes, nodeTypes } from "./node-types.js"
 
 function CanvasControlsRegistrar() {
-  const { fitView, zoomIn, zoomOut } = useReactFlow()
+  const { fitView, zoomIn, zoomOut, getZoom } = useReactFlow()
   const setCanvasControls = useDiagramStore((state) => state.setCanvasControls)
+  const setZoom = useDiagramStore((state) => state.setZoom)
 
   useEffect(() => {
+    setZoom(getZoom())
     setCanvasControls({
-      fitView: () => fitView({ padding: FIT_VIEW_PADDING }),
-      zoomIn: () => zoomIn(),
-      zoomOut: () => zoomOut(),
+      fitView: () => {
+        void fitView({ padding: FIT_VIEW_PADDING }).then(() => {
+          setZoom(getZoom())
+        })
+      },
+      zoomIn: () => {
+        void zoomIn().then(() => {
+          setZoom(getZoom())
+        })
+      },
+      zoomOut: () => {
+        void zoomOut().then(() => {
+          setZoom(getZoom())
+        })
+      },
     })
 
     return () => setCanvasControls(null)
-  }, [fitView, setCanvasControls, zoomIn, zoomOut])
+  }, [fitView, getZoom, setCanvasControls, setZoom, zoomIn, zoomOut])
 
   return null
 }
@@ -45,11 +59,13 @@ function SchemaCanvasInner() {
   const searchQuery = useDiagramStore((state) => state.searchQuery)
   const focusedEntityId = useDiagramStore((state) => state.focusedEntityId)
   const showRelations = useDiagramStore((state) => state.showRelations)
+  const showMinimap = useDiagramStore((state) => state.showMinimap)
   const setFocusedEntityId = useDiagramStore(
     (state) => state.setFocusedEntityId
   )
   const setManualPosition = useDiagramStore((state) => state.setManualPosition)
   const onNodesChange = useDiagramStore((state) => state.onNodesChange)
+  const setZoom = useDiagramStore((state) => state.setZoom)
 
   const normalizedQuery = searchQuery.trim().toLowerCase()
 
@@ -145,12 +161,13 @@ function SchemaCanvasInner() {
       onNodesChange={onNodesChange}
       onNodeClick={onNodeClick}
       onNodeDragStop={onNodeDragStop}
+      onMove={(_event, viewport) => setZoom(viewport.zoom)}
       proOptions={{ hideAttribution: true }}
     >
       <CanvasControlsRegistrar />
       <Background />
       <Controls />
-      <MiniMap />
+      {showMinimap ? <MiniMap /> : null}
     </ReactFlow>
   )
 }

@@ -22,6 +22,8 @@ export interface DiagramState {
   searchQuery: string
   focusedEntityId: string | null
   showRelations: boolean
+  showMinimap: boolean
+  zoom: number
   collapsedTables: Record<string, boolean>
   manualPositions: Record<string, { x: number; y: number }>
   canvasControls: CanvasControls | null
@@ -31,6 +33,8 @@ export interface DiagramState {
   setSearchQuery: (query: string) => void
   setFocusedEntityId: (entityId: string | null) => void
   setShowRelations: (show: boolean) => void
+  setShowMinimap: (show: boolean) => void
+  setZoom: (zoom: number) => void
   toggleTableCollapsed: (entityId: string) => void
   onNodesChange: (changes: NodeChange[]) => void
   setManualPosition: (

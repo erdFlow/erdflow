@@ -13,6 +13,8 @@ export const useDiagramStore = create<DiagramState>((set, get) => ({
   searchQuery: "",
   focusedEntityId: null,
   showRelations: true,
+  showMinimap: false,
+  zoom: 1,
   collapsedTables: {},
   manualPositions: {},
   canvasControls: null,
@@ -40,6 +42,8 @@ export const useDiagramStore = create<DiagramState>((set, get) => ({
   setSearchQuery: (searchQuery) => set({ searchQuery }),
   setFocusedEntityId: (focusedEntityId) => set({ focusedEntityId }),
   setShowRelations: (showRelations) => set({ showRelations }),
+  setShowMinimap: (showMinimap) => set({ showMinimap }),
+  setZoom: (zoom) => set({ zoom }),
   toggleTableCollapsed: (entityId) =>
     set((state) => {
       const collapsed = !(state.collapsedTables[entityId] ?? false)

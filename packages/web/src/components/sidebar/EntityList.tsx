@@ -1,4 +1,9 @@
 import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@workspace/ui/components/collapsible"
+import {
   Empty,
   EmptyDescription,
   EmptyHeader,
@@ -13,13 +18,44 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@workspace/ui/components/sidebar"
-import { useMemo } from "react"
+import { ChevronRightIcon } from "lucide-react"
+import { type ReactNode, useMemo } from "react"
 import {
   EMPTY_NO_MATCHES,
   EMPTY_NO_SCHEMA,
   SIDEBAR_SECTION,
 } from "../../data/labels.js"
 import { useDiagramStore } from "../../store/diagram-store.js"
+
+function CollapsibleSection({
+  label,
+  count,
+  children,
+}: {
+  label: string
+  count: number
+  children: ReactNode
+}) {
+  return (
+    <Collapsible defaultExpanded className="group/collapsible">
+      <SidebarGroup>
+        <SidebarGroupLabel
+          elementType={CollapsibleTrigger}
+          className="w-full cursor-pointer hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+        >
+          <ChevronRightIcon className="transition-transform group-data-expanded/collapsible:rotate-90" />
+          {label}
+          <span className="ml-auto tabular-nums">{count}</span>
+        </SidebarGroupLabel>
+        <CollapsibleContent>
+          <SidebarGroupContent>
+            <SidebarMenu>{children}</SidebarMenu>
+          </SidebarGroupContent>
+        </CollapsibleContent>
+      </SidebarGroup>
+    </Collapsible>
+  )
+}
 
 export function EntityList() {
   const schema = useDiagramStore((state) => state.schema)
@@ -79,47 +115,31 @@ export function EntityList() {
 
   return (
     <>
-      <SidebarGroup>
-        <SidebarGroupLabel>
-          {SIDEBAR_SECTION.TABLES}
-          <SidebarMenuBadge>{entities.length}</SidebarMenuBadge>
-        </SidebarGroupLabel>
-        <SidebarGroupContent>
-          <SidebarMenu>
-            {entities.map((entity) => (
-              <SidebarMenuItem key={entity.id}>
-                <SidebarMenuButton
-                  isActive={focusedEntityId === entity.id}
-                  onPress={() => setFocusedEntityId(entity.id)}
-                >
-                  <span>{entity.name}</span>
-                  <SidebarMenuBadge>{entity.fields.length}</SidebarMenuBadge>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            ))}
-          </SidebarMenu>
-        </SidebarGroupContent>
-      </SidebarGroup>
+      <CollapsibleSection label={SIDEBAR_SECTION.TABLES} count={entities.length}>
+        {entities.map((entity) => (
+          <SidebarMenuItem key={entity.id}>
+            <SidebarMenuButton
+              isActive={focusedEntityId === entity.id}
+              onPress={() => setFocusedEntityId(entity.id)}
+            >
+              <span>{entity.name}</span>
+              <SidebarMenuBadge>{entity.fields.length}</SidebarMenuBadge>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        ))}
+      </CollapsibleSection>
 
       {enums.length > 0 ? (
-        <SidebarGroup>
-          <SidebarGroupLabel>
-            {SIDEBAR_SECTION.ENUMS}
-            <SidebarMenuBadge>{enums.length}</SidebarMenuBadge>
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {enums.map((enumDef) => (
-                <SidebarMenuItem key={enumDef.id}>
-                  <SidebarMenuButton>
-                    <span>{enumDef.name}</span>
-                    <SidebarMenuBadge>{enumDef.values.length}</SidebarMenuBadge>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        <CollapsibleSection label={SIDEBAR_SECTION.ENUMS} count={enums.length}>
+          {enums.map((enumDef) => (
+            <SidebarMenuItem key={enumDef.id}>
+              <SidebarMenuButton>
+                <span>{enumDef.name}</span>
+                <SidebarMenuBadge>{enumDef.values.length}</SidebarMenuBadge>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          ))}
+        </CollapsibleSection>
       ) : null}
     </>
   )
