@@ -35,6 +35,23 @@ export const FIELD_DETAIL_DEFAULT = "Default"
 export const FIELD_DETAIL_COMMENT = "Comment"
 export const FIELD_DETAIL_EMPTY_REF = "—"
 
+export const ENUM_USAGE_ARIA_LABEL = "Where this enum is used"
+export const ENUM_UNUSED_LABEL = "This enum is not used by any table"
+
+export function enumUsedByLabel(refs: string[]): string {
+  if (refs.length === 0) {
+    return ENUM_UNUSED_LABEL
+  }
+
+  if (refs.length === 1) {
+    return `This enum is used by ${refs[0]}`
+  }
+
+  const last = refs.at(-1)
+  const head = refs.slice(0, -1).join(", ")
+  return `This enum is used by ${head}, and ${last}`
+}
+
 export const SHOW_RELATIONSHIPS_LABEL = "Show relationships"
 export const SHOW_MINIMAP_LABEL = "Show minimap"
 export const SETTINGS_LABEL = "Settings"

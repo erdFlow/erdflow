@@ -7,13 +7,18 @@ import {
 
 interface DiagramNodeShellProps {
   title: string
+  headerTrailing?: ReactNode
   children?: ReactNode
 }
 
 const hiddenHandleClass =
   "!h-1 !w-1 !min-w-0 !border-0 !bg-transparent opacity-0"
 
-export function DiagramNodeShell({ title, children }: DiagramNodeShellProps) {
+export function DiagramNodeShell({
+  title,
+  headerTrailing,
+  children,
+}: DiagramNodeShellProps) {
   return (
     <div className="relative size-full min-w-0 overflow-hidden rounded-md border border-border bg-card text-card-foreground shadow-sm transition-colors hover:border-muted-foreground/70 hover:border-dashed">
       <Handle
@@ -30,8 +35,11 @@ export function DiagramNodeShell({ title, children }: DiagramNodeShellProps) {
         className={hiddenHandleClass}
         isConnectable={false}
       />
-      <div className="flex h-12 shrink-0 items-center border-b bg-muted px-3">
-        <span className="truncate font-medium text-sm">{title}</span>
+      <div className="flex h-12 shrink-0 items-center gap-2 border-b bg-muted px-3">
+        <span className="min-w-0 flex-1 truncate font-medium text-sm">
+          {title}
+        </span>
+        {headerTrailing}
       </div>
       {children}
     </div>

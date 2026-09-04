@@ -1,14 +1,38 @@
+import { Tooltip, TooltipTrigger } from "@workspace/ui/components/tooltip"
 import type { NodeProps } from "@xyflow/react"
-import { memo } from "react"
+import { InfoIcon } from "lucide-react"
+import { memo, useMemo } from "react"
+import { ENUM_USAGE_ARIA_LABEL, enumUsedByLabel } from "../../data/labels.js"
+import { formatEnumUsage } from "../../lib/enum-usages.js"
 import type { EnumNodeData } from "../../types/flow-types.js"
 import { DiagramNodeShell } from "./DiagramNodeShell.js"
 
 function EnumNodeComponent({ data }: NodeProps) {
   const nodeData = data as EnumNodeData
   const enumDef = nodeData.enumDef
+  const usages = nodeData.usages ?? []
+
+  const usageLabel = useMemo(
+    () => enumUsedByLabel(usages.map(formatEnumUsage)),
+    [usages]
+  )
 
   return (
-    <DiagramNodeShell title={enumDef.name}>
+    <DiagramNodeShell
+      title={enumDef.name}
+      headerTrailing={
+        <TooltipTrigger delay={200}>
+          <button
+            type="button"
+            className="nodrag nopan flex size-5 shrink-0 items-center justify-center rounded-sm text-muted-foreground hover:bg-background/60 hover:text-foreground"
+            aria-label={ENUM_USAGE_ARIA_LABEL}
+          >
+            <InfoIcon className="size-3.5" />
+          </button>
+          <Tooltip placement="top">{usageLabel}</Tooltip>
+        </TooltipTrigger>
+      }
+    >
       <div className="flex flex-col">
         {enumDef.values.map((value) => (
           <div

@@ -8,6 +8,7 @@ import {
 import type { Edge, Node } from "@xyflow/react"
 import { EdgeKind, NodeKind } from "../data/constants.js"
 import type { RelationEdgeData } from "../types/flow-types.js"
+import { enumUsages } from "./enum-usages.js"
 import { foreignKeyRefs } from "./foreign-key-refs.js"
 import { entityNodeHeight, enumNodeHeight } from "./node-dimensions.js"
 import { resolveRelationHandles } from "./relation-handles.js"
@@ -71,6 +72,7 @@ export function schemaToFlow({
       data: {
         kind: "enum",
         enumDef,
+        usages: enumUsages(schema, enumDef.name),
       },
       style: {
         width: layoutNode?.width ?? ENUM_NODE_WIDTH,
@@ -143,6 +145,7 @@ export function updateFlowData(
         data: {
           kind: "enum" as const,
           enumDef,
+          usages: enumUsages(schema, enumDef.name),
         },
       })
     }

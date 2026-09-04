@@ -8,6 +8,11 @@ export {
   nodeBox,
 } from "./edge-geometry.js"
 export { getConnectedIds } from "./focus-utils.js"
+export {
+  type EnumUsage,
+  enumUsages,
+  formatEnumUsage,
+} from "./enum-usages.js"
 export { foreignKeyRefs } from "./foreign-key-refs.js"
 export {
   type MergeSchemaOptions,

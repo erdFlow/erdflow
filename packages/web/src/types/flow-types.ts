@@ -13,9 +13,16 @@ export interface TableNodeData {
   [key: string]: unknown
 }
 
+export interface EnumUsageRef {
+  table: string
+  field: string
+}
+
 export interface EnumNodeData {
   kind: "enum"
   enumDef: Enum
+  /** Tables/fields that reference this enum by type name. */
+  usages: EnumUsageRef[]
   [key: string]: unknown
 }
 
