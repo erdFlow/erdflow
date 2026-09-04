@@ -12,4 +12,4 @@ export {
   entityNodeHeight,
   enumNodeDimensions,
   enumNodeHeight,
-} from "@erdflow/layout";
+} from "@erdflow/layout"

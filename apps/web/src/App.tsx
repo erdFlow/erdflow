@@ -1,5 +1,5 @@
-import { ErdflowVisualizer } from "@erdflow/web";
+import { ErdflowVisualizer } from "@erdflow/web"
 
 export function App() {
-  return <ErdflowVisualizer />;
+  return <ErdflowVisualizer />
 }

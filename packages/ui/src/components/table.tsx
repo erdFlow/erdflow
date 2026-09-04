@@ -1,22 +1,21 @@
-import * as React from "react"
+import { cn } from "@workspace/ui/lib/utils"
+import type * as React from "react"
 import {
   Cell as CellPrimitive,
-  Column as ColumnPrimitive,
-  Row as RowPrimitive,
-  TableBody as TableBodyPrimitive,
-  TableFooter as TableFooterPrimitive,
-  TableHeader as TableHeaderPrimitive,
-  Table as TablePrimitive,
   type CellProps,
+  Column as ColumnPrimitive,
   type ColumnProps,
+  Row as RowPrimitive,
   type RowProps,
+  TableBody as TableBodyPrimitive,
   type TableBodyProps,
+  TableFooter as TableFooterPrimitive,
   type TableFooterProps,
+  TableHeader as TableHeaderPrimitive,
   type TableHeaderProps,
+  Table as TablePrimitive,
   type TableProps,
 } from "react-aria-components"
-
-import { cn } from "@workspace/ui/lib/utils"
 
 function Table({ className, ...props }: TableProps) {
   return (
@@ -87,7 +86,7 @@ function TableHead({ className, ...props }: ColumnProps) {
     <ColumnPrimitive
       data-slot="table-head"
       className={cn(
-        "h-10 px-2 text-left align-middle font-medium whitespace-nowrap text-foreground [&:has([data-slot=checkbox])]:pr-0 [&:has([role=checkbox])]:pr-0",
+        "h-10 whitespace-nowrap px-2 text-left align-middle font-medium text-foreground [&:has([data-slot=checkbox])]:pr-0 [&:has([role=checkbox])]:pr-0",
         className
       )}
       {...props}
@@ -100,7 +99,7 @@ function TableCell({ className, ...props }: CellProps) {
     <CellPrimitive
       data-slot="table-cell"
       className={cn(
-        "p-2 align-middle whitespace-nowrap [&:has([data-slot=checkbox])]:pr-0 [&:has([role=checkbox])]:pr-0",
+        "whitespace-nowrap p-2 align-middle [&:has([data-slot=checkbox])]:pr-0 [&:has([role=checkbox])]:pr-0",
         className
       )}
       {...props}
@@ -116,7 +115,7 @@ function TableCaption({
     <figcaption
       data-slot="table-caption"
       className={cn(
-        "mt-4 text-center text-sm text-muted-foreground",
+        "mt-4 text-center text-muted-foreground text-sm",
         className
       )}
       {...props}
@@ -126,11 +125,11 @@ function TableCaption({
 
 export {
   Table,
-  TableHeader,
   TableBody,
+  TableCaption,
+  TableCell,
   TableFooter,
   TableHead,
+  TableHeader,
   TableRow,
-  TableCell,
-  TableCaption,
 }

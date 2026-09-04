@@ -1,4 +1,12 @@
 export {
+  clearLayoutCache,
+  createLayoutCache,
+  defaultLayoutCache,
+  LayoutCache,
+} from "./cache.js"
+export { schemaTopologyHash } from "./hash.js"
+export { layoutSchema } from "./layout.js"
+export {
   ENTITY_HEADER_HEIGHT,
   ENTITY_MIN_HEIGHT,
   ENTITY_NODE_WIDTH,
@@ -12,15 +20,7 @@ export {
   entityNodeHeight,
   enumNodeDimensions,
   enumNodeHeight,
-} from "./node-dimensions.js";
-export { layoutSchema } from "./layout.js";
-export { schemaTopologyHash } from "./hash.js";
-export {
-  clearLayoutCache,
-  createLayoutCache,
-  defaultLayoutCache,
-  LayoutCache,
-} from "./cache.js";
+} from "./node-dimensions.js"
 export type {
   LayoutDirection,
   LayoutEdge,
@@ -28,4 +28,4 @@ export type {
   LayoutOptions,
   LayoutPoint,
   LayoutResult,
-} from "./types.js";
+} from "./types.js"

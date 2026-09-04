@@ -1,7 +1,7 @@
-export { ErdflowVisualizer } from "./components/ErdflowVisualizer.js";
-export { useDiagramStore } from "./store/diagram-store.js";
+export { ErdflowVisualizer } from "./components/ErdflowVisualizer.js"
+export { useDiagramStore } from "./store/diagram-store.js"
 export type {
   CanvasControls,
   ConnectionStatus,
   DiagramState,
-} from "./types/diagram-store.js";
+} from "./types/diagram-store.js"

@@ -4,9 +4,9 @@ import {
   SidebarFooter,
   SidebarHeader,
   SidebarRail,
-} from "@workspace/ui/components/sidebar";
-import { SearchFilter } from "../sidebar/SearchFilter.js";
-import { EntityList } from "../sidebar/EntityList.js";
+} from "@workspace/ui/components/sidebar"
+import { EntityList } from "../sidebar/EntityList.js"
+import { SearchFilter } from "../sidebar/SearchFilter.js"
 
 export function SidebarPanel() {
   return (
@@ -20,5 +20,5 @@ export function SidebarPanel() {
       <SidebarFooter />
       <SidebarRail />
     </Sidebar>
-  );
+  )
 }

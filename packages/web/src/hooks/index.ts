@@ -1,1 +1,1 @@
-export { useSchemaSocket } from "./use-schema-socket.js";
+export { useSchemaSocket } from "./use-schema-socket.js"

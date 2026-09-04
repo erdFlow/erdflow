@@ -1,15 +1,15 @@
-import chokidar from "chokidar";
+import chokidar from "chokidar"
 
 export interface SchemaWatcher {
-  close: () => Promise<void>;
+  close: () => Promise<void>
 }
 
 export function watchSchemaSource(
   watchPaths: string[],
   onChange: () => void,
-  debounceMs = 150,
+  debounceMs = 150
 ): SchemaWatcher {
-  let timer: NodeJS.Timeout | undefined;
+  let timer: NodeJS.Timeout | undefined
 
   const watcher = chokidar.watch(watchPaths, {
     ignoreInitial: true,
@@ -17,27 +17,27 @@ export function watchSchemaSource(
       stabilityThreshold: debounceMs,
       pollInterval: 50,
     },
-  });
+  })
 
   const schedule = () => {
     if (timer) {
-      clearTimeout(timer);
+      clearTimeout(timer)
     }
     timer = setTimeout(() => {
-      onChange();
-    }, debounceMs);
-  };
+      onChange()
+    }, debounceMs)
+  }
 
-  watcher.on("add", schedule);
-  watcher.on("change", schedule);
-  watcher.on("unlink", schedule);
+  watcher.on("add", schedule)
+  watcher.on("change", schedule)
+  watcher.on("unlink", schedule)
 
   return {
     async close() {
       if (timer) {
-        clearTimeout(timer);
+        clearTimeout(timer)
       }
-      await watcher.close();
+      await watcher.close()
     },
-  };
+  }
 }

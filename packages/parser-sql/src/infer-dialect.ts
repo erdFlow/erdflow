@@ -1,13 +1,13 @@
-export type SqlDialect = "postgresql" | "mysql" | "sqlite";
+export type SqlDialect = "postgresql" | "mysql" | "sqlite"
 
 export function inferSqlDialect(sql: string): SqlDialect {
-  const normalized = sql.toLowerCase();
+  const normalized = sql.toLowerCase()
 
   if (
     normalized.includes("autoincrement") ||
     normalized.includes("without rowid")
   ) {
-    return "sqlite";
+    return "sqlite"
   }
 
   if (
@@ -15,7 +15,7 @@ export function inferSqlDialect(sql: string): SqlDialect {
     normalized.includes("engine=innodb") ||
     sql.includes("`")
   ) {
-    return "mysql";
+    return "mysql"
   }
 
   if (
@@ -23,8 +23,8 @@ export function inferSqlDialect(sql: string): SqlDialect {
     normalized.includes("create type") ||
     normalized.includes("::")
   ) {
-    return "postgresql";
+    return "postgresql"
   }
 
-  return "postgresql";
+  return "postgresql"
 }

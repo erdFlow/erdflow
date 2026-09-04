@@ -1,75 +1,82 @@
-import type { LayoutEdge, LayoutNode, LayoutPoint, LayoutResult } from "./types.js";
-import type { ElkNodeKindMap } from "./to-elk.js";
+import type { ElkNodeKindMap } from "./to-elk.js"
+import type {
+  LayoutEdge,
+  LayoutNode,
+  LayoutPoint,
+  LayoutResult,
+} from "./types.js"
 
 interface ElkPoint {
-  x?: number;
-  y?: number;
+  x?: number
+  y?: number
 }
 
 interface ElkEdgeSection {
-  startPoint?: ElkPoint;
-  endPoint?: ElkPoint;
-  bendPoints?: ElkPoint[];
+  startPoint?: ElkPoint
+  endPoint?: ElkPoint
+  bendPoints?: ElkPoint[]
 }
 
 interface ElkLayoutEdge {
-  id?: string;
-  sources?: string[];
-  targets?: string[];
-  sections?: ElkEdgeSection[];
+  id?: string
+  sources?: string[]
+  targets?: string[]
+  sections?: ElkEdgeSection[]
 }
 
 interface ElkLayoutNode {
-  id?: string;
-  x?: number;
-  y?: number;
-  width?: number;
-  height?: number;
+  id?: string
+  x?: number
+  y?: number
+  width?: number
+  height?: number
 }
 
 interface ElkLayoutGraph {
-  children?: ElkLayoutNode[];
-  edges?: ElkLayoutEdge[];
+  children?: ElkLayoutNode[]
+  edges?: ElkLayoutEdge[]
 }
 
 function toPoint(point?: ElkPoint): LayoutPoint | undefined {
   if (point?.x === undefined || point?.y === undefined) {
-    return undefined;
+    return undefined
   }
-  return { x: point.x, y: point.y };
+  return { x: point.x, y: point.y }
 }
 
-function sectionsToPoints(sections?: ElkEdgeSection[]): LayoutPoint[] | undefined {
+function sectionsToPoints(
+  sections?: ElkEdgeSection[]
+): LayoutPoint[] | undefined {
   if (!sections || sections.length === 0) {
-    return undefined;
+    return undefined
   }
 
-  const points: LayoutPoint[] = [];
+  const points: LayoutPoint[] = []
   for (const section of sections) {
-    const start = toPoint(section.startPoint);
+    const start = toPoint(section.startPoint)
     if (start) {
-      points.push(start);
+      points.push(start)
     }
 
     for (const bendPoint of section.bendPoints ?? []) {
-      const point = toPoint(bendPoint);
+      const point = toPoint(bendPoint)
       if (point) {
-        points.push(point);
+        points.push(point)
       }
     }
 
-    const end = toPoint(section.endPoint);
+    const end = toPoint(section.endPoint)
     if (end) {
-      points.push(end);
+      points.push(end)
     }
   }
 
-  return points.length > 0 ? points : undefined;
+  return points.length > 0 ? points : undefined
 }
 
 export function fromElkGraph(
   graph: ElkLayoutGraph,
-  nodeKinds: ElkNodeKindMap,
+  nodeKinds: ElkNodeKindMap
 ): LayoutResult {
   const nodes: LayoutNode[] = (graph.children ?? [])
     .filter((node): node is ElkLayoutNode & { id: string } => Boolean(node.id))
@@ -80,7 +87,7 @@ export function fromElkGraph(
       y: node.y ?? 0,
       width: node.width ?? 0,
       height: node.height ?? 0,
-    }));
+    }))
 
   const edges: LayoutEdge[] = (graph.edges ?? [])
     .filter((edge): edge is ElkLayoutEdge & { id: string } => Boolean(edge.id))
@@ -90,7 +97,7 @@ export function fromElkGraph(
       targetId: edge.targets?.[0] ?? "",
       points: sectionsToPoints(edge.sections),
     }))
-    .filter((edge) => edge.sourceId && edge.targetId);
+    .filter((edge) => edge.sourceId && edge.targetId)
 
-  return { nodes, edges };
+  return { nodes, edges }
 }

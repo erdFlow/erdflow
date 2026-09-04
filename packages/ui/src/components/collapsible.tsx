@@ -1,8 +1,8 @@
 import {
+  type ButtonProps,
   DisclosurePanel as CollapsibleContentPrimitive,
   Disclosure as CollapsiblePrimitive,
   Button as CollapsibleTriggerPrimitive,
-  type ButtonProps,
   type DisclosurePanelProps,
   type DisclosureProps,
 } from "react-aria-components"
@@ -27,4 +27,4 @@ function CollapsibleContent({ ...props }: DisclosurePanelProps) {
   )
 }
 
-export { Collapsible, CollapsibleTrigger, CollapsibleContent }
+export { Collapsible, CollapsibleContent, CollapsibleTrigger }

@@ -1,6 +1,6 @@
-import { runCli } from "./run.js";
+import { runCli } from "./run.js"
 
 runCli().catch((error: unknown) => {
-  console.error(error instanceof Error ? error.message : String(error));
-  process.exit(1);
-});
+  console.error(error instanceof Error ? error.message : String(error))
+  process.exit(1)
+})

@@ -1,4 +1,4 @@
-import { defineConfig } from "tsup";
+import { defineConfig } from "tsup"
 
 export default defineConfig({
   entry: ["src/cli.ts"],
@@ -13,4 +13,4 @@ export default defineConfig({
   sourcemap: true,
   noExternal: [/^@erdflow\//, /^@dbml\//, /^node-sql-parser/],
   external: [/^@prisma\//],
-});
+})
