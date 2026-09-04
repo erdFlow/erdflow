@@ -12,6 +12,7 @@
   "dependencies": {
     "@erdflow/core": "workspace:*",
     "@erdflow/layout": "workspace:*",
+    "@tanstack/react-hotkeys": "^0.10.0",
     "@workspace/ui": "workspace:*",
     "@xyflow/react": "^12.8.4",
     "lucide-react": "^1.38.0",

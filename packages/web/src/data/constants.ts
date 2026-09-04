@@ -38,5 +38,9 @@ export const EdgeKind = {
   RELATION: "relation",
 } as const
 
+/** Canvas zoom shortcuts (Mod = ⌘ on macOS, Ctrl on Windows/Linux). */
+export const HOTKEY_ZOOM_IN = "Mod+="
+export const HOTKEY_ZOOM_OUT = "Mod+-"
+
 export type NodeKindValue = (typeof NodeKind)[keyof typeof NodeKind]
 export type EdgeKindValue = (typeof EdgeKind)[keyof typeof EdgeKind]
