@@ -60,6 +60,7 @@ export const SQL_VIEW_EMPTY_DESCRIPTION =
   "Click a table on the canvas or in the sidebar."
 export const SQL_VIEW_COPY_LABEL = "Copy SQL"
 export const SQL_VIEW_COPIED_LABEL = "Copied"
+export const SQL_VIEW_CLOSE_LABEL = "Close SQL View"
 export const SETTINGS_LABEL = "Settings"
 export const THEME_LABEL = "Theme"
 export const THEME_LIGHT_LABEL = "Light"

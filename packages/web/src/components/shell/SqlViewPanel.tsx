@@ -5,10 +5,11 @@ import {
   EmptyHeader,
   EmptyTitle,
 } from "@workspace/ui/components/empty"
-import { CheckIcon, CopyIcon } from "lucide-react"
+import { CheckIcon, CopyIcon, XIcon } from "lucide-react"
 import { useMemo, useState } from "react"
 import {
   SHOW_SQL_VIEW_LABEL,
+  SQL_VIEW_CLOSE_LABEL,
   SQL_VIEW_COPIED_LABEL,
   SQL_VIEW_COPY_LABEL,
   SQL_VIEW_EMPTY_DESCRIPTION,
@@ -21,6 +22,7 @@ import { useDiagramStore } from "../../store/diagram-store.js"
 export function SqlViewPanel() {
   const schema = useDiagramStore((state) => state.schema)
   const focusedEntityId = useDiagramStore((state) => state.focusedEntityId)
+  const setShowSqlView = useDiagramStore((state) => state.setShowSqlView)
   const [copied, setCopied] = useState(false)
 
   const entity = useMemo(() => {
@@ -69,20 +71,30 @@ export function SqlViewPanel() {
             </p>
           ) : null}
         </div>
-        {sql ? (
+        <div className="flex shrink-0 items-center gap-1">
+          {sql ? (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              onClick={() => {
+                void handleCopy()
+              }}
+              aria-label={copied ? SQL_VIEW_COPIED_LABEL : SQL_VIEW_COPY_LABEL}
+            >
+              {copied ? <CheckIcon /> : <CopyIcon />}
+            </Button>
+          ) : null}
           <Button
             type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              void handleCopy()
-            }}
-            aria-label={SQL_VIEW_COPY_LABEL}
+            variant="ghost"
+            size="icon-sm"
+            onClick={() => setShowSqlView(false)}
+            aria-label={SQL_VIEW_CLOSE_LABEL}
           >
-            {copied ? <CheckIcon /> : <CopyIcon />}
-            {copied ? SQL_VIEW_COPIED_LABEL : SQL_VIEW_COPY_LABEL}
+            <XIcon />
           </Button>
-        ) : null}
+        </div>
       </div>
 
       <div className="min-h-0 flex-1 overflow-auto p-3">
