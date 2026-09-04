@@ -1,16 +1,16 @@
-import type { Entity, EntityId, UniversalSchema } from "../schema/types.js";
-import { issue } from "./helpers.js";
-import type { EntityValidationContext } from "./validate-entities.js";
-import type { ValidationIssue } from "./types.js";
+import type { Entity, EntityId, UniversalSchema } from "../schema/types.js"
+import { issue } from "./helpers.js"
+import type { ValidationIssue } from "./types.js"
+import type { EntityValidationContext } from "./validate-entities.js"
 
 /** Validate relation entity/field references. */
 export function validateRelations(
   schema: UniversalSchema,
   entityById: Map<EntityId, Entity>,
-  context: EntityValidationContext,
+  context: EntityValidationContext
 ): ValidationIssue[] {
-  const issues: ValidationIssue[] = [];
-  const { fieldById } = context;
+  const issues: ValidationIssue[] = []
+  const { fieldById } = context
 
   for (const relation of schema.relations) {
     if (!entityById.has(relation.from.entityId)) {
@@ -19,9 +19,9 @@ export function validateRelations(
           "missing_entity_reference",
           `Relation "${relation.id}" references missing source entity "${relation.from.entityId}".`,
           "error",
-          `relations.${relation.id}.from.entityId`,
-        ),
-      );
+          `relations.${relation.id}.from.entityId`
+        )
+      )
     }
 
     if (!entityById.has(relation.to.entityId)) {
@@ -30,9 +30,9 @@ export function validateRelations(
           "missing_entity_reference",
           `Relation "${relation.id}" references missing target entity "${relation.to.entityId}".`,
           "error",
-          `relations.${relation.id}.to.entityId`,
-        ),
-      );
+          `relations.${relation.id}.to.entityId`
+        )
+      )
     }
 
     for (const fieldId of relation.from.fieldIds ?? []) {
@@ -42,9 +42,9 @@ export function validateRelations(
             "missing_field_reference",
             `Relation "${relation.id}" references missing source field "${fieldId}".`,
             "error",
-            `relations.${relation.id}.from.fieldIds`,
-          ),
-        );
+            `relations.${relation.id}.from.fieldIds`
+          )
+        )
       }
     }
 
@@ -55,9 +55,9 @@ export function validateRelations(
             "missing_field_reference",
             `Relation "${relation.id}" references missing target field "${fieldId}".`,
             "error",
-            `relations.${relation.id}.to.fieldIds`,
-          ),
-        );
+            `relations.${relation.id}.to.fieldIds`
+          )
+        )
       }
     }
 
@@ -70,11 +70,11 @@ export function validateRelations(
           "broken_relation",
           `Relation "${relation.id}" points to a missing entity.`,
           "warning",
-          `relations.${relation.id}`,
-        ),
-      );
+          `relations.${relation.id}`
+        )
+      )
     }
   }
 
-  return issues;
+  return issues
 }

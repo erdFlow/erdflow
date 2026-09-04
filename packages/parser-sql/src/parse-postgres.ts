@@ -1,11 +1,11 @@
-import type { SchemaMeta, UniversalSchema } from "@erdflow/core";
-import { Parser } from "@dbml/core";
-import { mapDbmlDatabase } from "@erdflow/parser-dbml/mapper";
+import { Parser } from "@dbml/core"
+import type { SchemaMeta, UniversalSchema } from "@erdflow/core"
+import { mapDbmlDatabase } from "@erdflow/parser-dbml/mapper"
 
 export function parsePostgresSql(
   input: string,
-  meta?: SchemaMeta,
+  meta?: SchemaMeta
 ): UniversalSchema {
-  const database = new Parser().parse(input, "postgres");
-  return mapDbmlDatabase(database, meta);
+  const database = new Parser().parse(input, "postgres")
+  return mapDbmlDatabase(database, meta)
 }

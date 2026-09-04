@@ -1,13 +1,3 @@
-import type { SchemaMeta, UniversalSchema } from "@erdflow/core";
-import {
-  assertValidSchema,
-  createConstraintId,
-  createEntityId,
-  createEnumId,
-  createFieldId,
-  createIndexId,
-  createRelationId,
-} from "@erdflow/core";
 import type {
   Constraint,
   Entity,
@@ -16,69 +6,80 @@ import type {
   Index,
   Relation,
   RelationCardinality,
-} from "@erdflow/core";
-import prismaInternals from "@prisma/internals";
+  SchemaMeta,
+  UniversalSchema,
+} from "@erdflow/core"
+import {
+  assertValidSchema,
+  createConstraintId,
+  createEntityId,
+  createEnumId,
+  createFieldId,
+  createIndexId,
+  createRelationId,
+} from "@erdflow/core"
+import prismaInternals from "@prisma/internals"
 
-const { getDMMF } = prismaInternals;
+const { getDMMF } = prismaInternals
 
 interface DmmfField {
-  name: string;
-  kind: string;
-  type: string;
-  isList: boolean;
-  isRequired: boolean;
-  isUnique: boolean;
-  isId: boolean;
-  hasDefaultValue?: boolean;
-  default?: unknown;
-  nativeType?: [string, unknown[]] | null;
-  relationName?: string | null;
-  relationFromFields?: string[];
-  relationToFields?: string[];
-  relationOnDelete?: string | null;
-  relationOnUpdate?: string | null;
-  documentation?: string | null;
+  name: string
+  kind: string
+  type: string
+  isList: boolean
+  isRequired: boolean
+  isUnique: boolean
+  isId: boolean
+  hasDefaultValue?: boolean
+  default?: unknown
+  nativeType?: [string, unknown[]] | null
+  relationName?: string | null
+  relationFromFields?: string[]
+  relationToFields?: string[]
+  relationOnDelete?: string | null
+  relationOnUpdate?: string | null
+  documentation?: string | null
 }
 
 interface DmmfModel {
-  name: string;
-  fields: DmmfField[];
-  primaryKey?: { fields: string[] } | null;
-  uniqueFields?: string[][];
-  indexes?: Array<{ name?: string | null; fields: string[] }>;
-  documentation?: string | null;
+  name: string
+  fields: DmmfField[]
+  primaryKey?: { fields: string[] } | null
+  uniqueFields?: string[][]
+  indexes?: Array<{ name?: string | null; fields: string[] }>
+  documentation?: string | null
 }
 
 interface DmmfEnum {
-  name: string;
-  values: Array<{ name: string }>;
+  name: string
+  values: Array<{ name: string }>
 }
 
 interface DmmfDocument {
   datamodel: {
-    models: DmmfModel[];
-    enums: DmmfEnum[];
+    models: DmmfModel[]
+    enums: DmmfEnum[]
     indexes?: Array<{
-      model: string;
-      type: string;
-      dbName?: string | null;
-      fields: Array<{ name: string }>;
-    }>;
-  };
+      model: string
+      type: string
+      dbName?: string | null
+      fields: Array<{ name: string }>
+    }>
+  }
 }
 
 function formatDefault(value: unknown): string | undefined {
   if (value === undefined || value === null) {
-    return undefined;
+    return undefined
   }
   if (typeof value === "string") {
-    return value;
+    return value
   }
-  return JSON.stringify(value);
+  return JSON.stringify(value)
 }
 
 function mapScalarField(modelName: string, field: DmmfField): Field {
-  const nativeType = field.nativeType?.[0];
+  const nativeType = field.nativeType?.[0]
   return {
     id: createFieldId(modelName, field.name),
     name: field.name,
@@ -92,43 +93,46 @@ function mapScalarField(modelName: string, field: DmmfField): Field {
     isPrimaryKey: field.isId,
     isUnique: field.isUnique,
     comment: field.documentation ?? undefined,
-  };
+  }
 }
 
 function mapModel(model: DmmfModel): {
-  entity: Entity;
-  constraints: Constraint[];
+  entity: Entity
+  constraints: Constraint[]
 } {
-  const entityId = createEntityId(model.name);
-  const scalarFields = model.fields.filter((field) => field.kind !== "object");
-  const fields = scalarFields.map((field) => mapScalarField(model.name, field));
+  const entityId = createEntityId(model.name)
+  const scalarFields = model.fields.filter((field) => field.kind !== "object")
+  const fields = scalarFields.map((field) => mapScalarField(model.name, field))
 
   for (const field of model.fields) {
     if (field.kind === "object") {
-      continue;
+      continue
     }
-    if (field.isId && !fields.find((entry) => entry.name === field.name)?.isPrimaryKey) {
-      const mapped = fields.find((entry) => entry.name === field.name);
+    if (
+      field.isId &&
+      !fields.find((entry) => entry.name === field.name)?.isPrimaryKey
+    ) {
+      const mapped = fields.find((entry) => entry.name === field.name)
       if (mapped) {
-        mapped.isPrimaryKey = true;
+        mapped.isPrimaryKey = true
       }
     }
   }
 
   const pkFieldNames =
     model.primaryKey?.fields ??
-    fields.filter((field) => field.isPrimaryKey).map((field) => field.name);
+    fields.filter((field) => field.isPrimaryKey).map((field) => field.name)
 
-  const constraints: Constraint[] = [];
+  const constraints: Constraint[] = []
   if (pkFieldNames.length > 0) {
     constraints.push({
       id: createConstraintId(model.name, "primary_key", pkFieldNames),
       kind: "primary_key",
       entityId,
       fieldIds: pkFieldNames.map((fieldName) =>
-        createFieldId(model.name, fieldName),
+        createFieldId(model.name, fieldName)
       ),
-    });
+    })
   }
 
   for (const field of fields) {
@@ -138,7 +142,7 @@ function mapModel(model: DmmfModel): {
         kind: "unique",
         entityId,
         fieldIds: [field.id],
-      });
+      })
     }
   }
 
@@ -149,9 +153,9 @@ function mapModel(model: DmmfModel): {
         kind: "unique",
         entityId,
         fieldIds: uniqueFields.map((fieldName) =>
-          createFieldId(model.name, fieldName),
+          createFieldId(model.name, fieldName)
         ),
-      });
+      })
     }
   }
 
@@ -164,170 +168,169 @@ function mapModel(model: DmmfModel): {
       comment: model.documentation ?? undefined,
     },
     constraints,
-  };
+  }
 }
 
 function mapDatamodelIndexes(
-  indexes: NonNullable<DmmfDocument["datamodel"]["indexes"]>,
+  indexes: NonNullable<DmmfDocument["datamodel"]["indexes"]>
 ): Index[] {
   return indexes
     .filter((index) => index.type === "normal")
     .map((index, indexNumber) => ({
-      id: createIndexId(
-        index.model,
-        index.dbName ?? `index_${indexNumber}`,
-      ),
+      id: createIndexId(index.model, index.dbName ?? `index_${indexNumber}`),
       name: index.dbName ?? `index_${indexNumber}`,
       entityId: createEntityId(index.model),
       fieldIds: index.fields.map((field) =>
-        createFieldId(index.model, field.name),
+        createFieldId(index.model, field.name)
       ),
       unique: false,
-    }));
+    }))
 }
 
 function inferCardinality(
   fkSide: DmmfField,
-  inverse?: DmmfField,
+  inverse?: DmmfField
 ): RelationCardinality {
   if (fkSide.isList && inverse?.isList) {
-    return "many-to-many";
+    return "many-to-many"
   }
   if (fkSide.isList || inverse?.isList) {
-    return "one-to-many";
+    return "one-to-many"
   }
-  return "one-to-one";
+  return "one-to-one"
 }
 
 function mapRelations(models: DmmfModel[]): Relation[] {
-  const relations: Relation[] = [];
-  const seen = new Set<string>();
+  const relations: Relation[] = []
+  const seen = new Set<string>()
 
   for (const model of models) {
     for (const field of model.fields) {
       if (field.kind !== "object" || !field.relationFromFields?.length) {
-        continue;
+        continue
       }
 
-      const relationKey = field.relationName ?? `${model.name}.${field.name}`;
+      const relationKey = field.relationName ?? `${model.name}.${field.name}`
       if (seen.has(relationKey)) {
-        continue;
+        continue
       }
-      seen.add(relationKey);
+      seen.add(relationKey)
 
-      const referencedModel = models.find((entry) => entry.name === field.type);
+      const referencedModel = models.find((entry) => entry.name === field.type)
       const inverse = referencedModel?.fields.find(
         (entry) =>
-          entry.kind === "object" && entry.relationName === field.relationName,
-      );
+          entry.kind === "object" && entry.relationName === field.relationName
+      )
 
-      let fromEntity: string;
-      let toEntity: string;
-      let fromFieldNames: string[];
-      let toFieldNames: string[];
+      let fromEntity: string
+      let toEntity: string
+      let fromFieldNames: string[]
+      let toFieldNames: string[]
 
       if (inverse?.isList) {
-        fromEntity = field.type;
-        toEntity = model.name;
-        fromFieldNames = field.relationToFields ?? [];
-        toFieldNames = field.relationFromFields;
+        fromEntity = field.type
+        toEntity = model.name
+        fromFieldNames = field.relationToFields ?? []
+        toFieldNames = field.relationFromFields
       } else {
-        fromEntity = field.type;
-        toEntity = model.name;
-        fromFieldNames = field.relationToFields ?? [];
-        toFieldNames = field.relationFromFields;
+        fromEntity = field.type
+        toEntity = model.name
+        fromFieldNames = field.relationToFields ?? []
+        toFieldNames = field.relationFromFields
       }
 
       relations.push({
         id: createRelationId(
           fromEntity,
           toEntity,
-          `${fromFieldNames.join(",")}->${toFieldNames.join(",")}`,
+          `${fromFieldNames.join(",")}->${toFieldNames.join(",")}`
         ),
         name: relationKey,
         from: {
           entityId: createEntityId(fromEntity),
           fieldIds: fromFieldNames.map((fieldName) =>
-            createFieldId(fromEntity, fieldName),
+            createFieldId(fromEntity, fieldName)
           ),
         },
         to: {
           entityId: createEntityId(toEntity),
           fieldIds: toFieldNames.map((fieldName) =>
-            createFieldId(toEntity, fieldName),
+            createFieldId(toEntity, fieldName)
           ),
         },
         cardinality: inferCardinality(field, inverse),
         onDelete: field.relationOnDelete ?? undefined,
         onUpdate: field.relationOnUpdate ?? undefined,
-      });
+      })
     }
   }
 
-  return relations;
+  return relations
 }
 
 function mapForeignKeyConstraints(
   models: DmmfModel[],
-  relations: Relation[],
+  relations: Relation[]
 ): Constraint[] {
-  const constraints: Constraint[] = [];
+  const constraints: Constraint[] = []
 
   for (const model of models) {
     for (const field of model.fields) {
       if (field.kind !== "object" || !field.relationFromFields?.length) {
-        continue;
+        continue
       }
 
       constraints.push({
         id: createConstraintId(
           model.name,
           "foreign_key",
-          field.relationFromFields,
+          field.relationFromFields
         ),
         kind: "foreign_key",
         entityId: createEntityId(model.name),
         fieldIds: field.relationFromFields.map((fieldName) =>
-          createFieldId(model.name, fieldName),
+          createFieldId(model.name, fieldName)
         ),
         referencedEntityId: createEntityId(field.type),
         referencedFieldIds: (field.relationToFields ?? []).map((fieldName) =>
-          createFieldId(field.type, fieldName),
+          createFieldId(field.type, fieldName)
         ),
-      });
+      })
     }
   }
 
-  void relations;
-  return constraints;
+  void relations
+  return constraints
 }
 
 export async function parsePrismaSchema(
   input: string,
-  meta?: SchemaMeta,
+  meta?: SchemaMeta
 ): Promise<UniversalSchema> {
-  const dmmf = (await getDMMF({ datamodel: input })) as unknown as DmmfDocument;
+  const dmmf = (await getDMMF({ datamodel: input })) as unknown as DmmfDocument
 
-  const entities: Entity[] = [];
-  const indexes: Index[] = [];
-  const constraints: Constraint[] = [];
+  const entities: Entity[] = []
+  const indexes: Index[] = []
+  const constraints: Constraint[] = []
 
   for (const model of dmmf.datamodel.models) {
-    const mapped = mapModel(model);
-    entities.push(mapped.entity);
-    constraints.push(...mapped.constraints);
+    const mapped = mapModel(model)
+    entities.push(mapped.entity)
+    constraints.push(...mapped.constraints)
   }
 
-  indexes.push(...mapDatamodelIndexes(dmmf.datamodel.indexes ?? []));
+  indexes.push(...mapDatamodelIndexes(dmmf.datamodel.indexes ?? []))
 
   const enums: Enum[] = dmmf.datamodel.enums.map((enumDef) => ({
     id: createEnumId(enumDef.name),
     name: enumDef.name,
     values: enumDef.values.map((value) => value.name),
-  }));
+  }))
 
-  const relations = mapRelations(dmmf.datamodel.models);
-  constraints.push(...mapForeignKeyConstraints(dmmf.datamodel.models, relations));
+  const relations = mapRelations(dmmf.datamodel.models)
+  constraints.push(
+    ...mapForeignKeyConstraints(dmmf.datamodel.models, relations)
+  )
 
   const schema: UniversalSchema = {
     entities,
@@ -336,8 +339,8 @@ export async function parsePrismaSchema(
     indexes,
     constraints,
     meta,
-  };
+  }
 
-  assertValidSchema(schema);
-  return schema;
+  assertValidSchema(schema)
+  return schema
 }

@@ -1,17 +1,21 @@
 import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from "@workspace/ui/components/alert"
+import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
-} from "@workspace/ui/components/sidebar";
-import { Alert, AlertDescription, AlertTitle } from "@workspace/ui/components/alert";
-import { SchemaCanvas } from "../canvas/SchemaCanvas.js";
-import { Footer } from "./Footer.js";
-import { Header } from "./Header.js";
-import { SidebarPanel } from "./SidebarPanel.js";
-import { useDiagramStore } from "../../store/diagram-store.js";
+} from "@workspace/ui/components/sidebar"
+import { useDiagramStore } from "../../store/diagram-store.js"
+import { SchemaCanvas } from "../canvas/SchemaCanvas.js"
+import { Footer } from "./Footer.js"
+import { Header } from "./Header.js"
+import { SidebarPanel } from "./SidebarPanel.js"
 
 export function AppShell() {
-  const error = useDiagramStore((state) => state.error);
+  const error = useDiagramStore((state) => state.error)
 
   return (
     <SidebarProvider>
@@ -35,5 +39,5 @@ export function AppShell() {
         </div>
       </SidebarInset>
     </SidebarProvider>
-  );
+  )
 }

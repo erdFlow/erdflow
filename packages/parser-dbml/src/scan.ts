@@ -1,55 +1,56 @@
-import { access, readdir } from "node:fs/promises";
-import { join } from "node:path";
+import type { Dirent } from "node:fs"
+import { access, readdir } from "node:fs/promises"
+import { join } from "node:path"
 
-const MAX_DEPTH = 4;
+const MAX_DEPTH = 4
 
 async function exists(path: string): Promise<boolean> {
   try {
-    await access(path);
-    return true;
+    await access(path)
+    return true
   } catch {
-    return false;
+    return false
   }
 }
 
 export async function findFilesByExtension(
   rootDir: string,
   extension: string,
-  maxDepth = MAX_DEPTH,
+  maxDepth = MAX_DEPTH
 ): Promise<string[]> {
-  const results: string[] = [];
+  const results: string[] = []
 
   async function walk(dir: string, depth: number): Promise<void> {
     if (depth > maxDepth) {
-      return;
+      return
     }
 
-    let entries;
+    let entries: Dirent[]
     try {
-      entries = await readdir(dir, { withFileTypes: true });
+      entries = await readdir(dir, { withFileTypes: true })
     } catch {
-      return;
+      return
     }
 
     for (const entry of entries) {
       if (entry.name.startsWith(".") || entry.name === "node_modules") {
-        continue;
+        continue
       }
 
-      const fullPath = join(dir, entry.name);
+      const fullPath = join(dir, entry.name)
       if (entry.isDirectory()) {
-        await walk(fullPath, depth + 1);
-        continue;
+        await walk(fullPath, depth + 1)
+        continue
       }
 
       if (entry.isFile() && entry.name.endsWith(extension)) {
-        results.push(fullPath);
+        results.push(fullPath)
       }
     }
   }
 
-  await walk(rootDir, 0);
-  return results;
+  await walk(rootDir, 0)
+  return results
 }
 
-export { exists };
+export { exists }

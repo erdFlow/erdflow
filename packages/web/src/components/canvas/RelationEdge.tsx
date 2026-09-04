@@ -1,4 +1,3 @@
-import { memo, useState } from "react";
 import {
   BaseEdge,
   EdgeLabelRenderer,
@@ -7,14 +6,15 @@ import {
   getSmoothStepPath,
   Position,
   useInternalNode,
-} from "@xyflow/react";
+} from "@xyflow/react"
+import { memo, useState } from "react"
 import {
   anchor,
   buildPathFromPoints,
   cardinalitySymbols,
   nodeBox,
-} from "../../lib/edge-geometry.js";
-import type { RelationEdgeData } from "../../types/flow-types.js";
+} from "../../lib/edge-geometry.js"
+import type { RelationEdgeData } from "../../types/flow-types.js"
 
 function EndpointBadge({
   x,
@@ -22,22 +22,22 @@ function EndpointBadge({
   dir,
   label,
 }: {
-  x: number;
-  y: number;
+  x: number
+  y: number
   /** -1 = endpoint on node's left edge, +1 = right edge. Badge sits outside. */
-  dir: number;
-  label: string;
+  dir: number
+  label: string
 }) {
   return (
     <div
-      className="pointer-events-none absolute flex size-4 items-center justify-center rounded-full bg-foreground text-[9px] font-semibold text-background ring-2 ring-background"
+      className="pointer-events-none absolute flex size-4 items-center justify-center rounded-full bg-foreground font-semibold text-[9px] text-background ring-2 ring-background"
       style={{
         transform: `translate(-50%, -50%) translate(${x + dir * 11}px, ${y}px)`,
       }}
     >
       {label}
     </div>
-  );
+  )
 }
 
 function RelationEdgeComponent({
@@ -54,38 +54,38 @@ function RelationEdgeComponent({
   markerEnd,
   style,
 }: EdgeProps) {
-  const edgeData = data as RelationEdgeData | undefined;
-  const sourceBox = nodeBox(useInternalNode(source));
-  const targetBox = nodeBox(useInternalNode(target));
-  const [hovered, setHovered] = useState(false);
+  const edgeData = data as RelationEdgeData | undefined
+  const sourceBox = nodeBox(useInternalNode(source))
+  const targetBox = nodeBox(useInternalNode(target))
+  const [hovered, setHovered] = useState(false)
 
-  let routedPath: string;
-  let labelX = (sourceX + targetX) / 2;
-  let labelY = (sourceY + targetY) / 2;
-  let sEndX = sourceX;
-  let sEndY = sourceY;
-  let tEndX = targetX;
-  let tEndY = targetY;
-  let sDir = 0;
-  let tDir = 0;
-  let showBadges = false;
+  let routedPath: string
+  let labelX = (sourceX + targetX) / 2
+  let labelY = (sourceY + targetY) / 2
+  let sEndX = sourceX
+  let sEndY = sourceY
+  let tEndX = targetX
+  let tEndY = targetY
+  let sDir = 0
+  let tDir = 0
+  let showBadges = false
 
   if (sourceBox && targetBox) {
-    const sourceCenterX = sourceBox.x + sourceBox.width / 2;
-    const targetCenterX = targetBox.x + targetBox.width / 2;
-    const sourceOnRight = targetCenterX >= sourceCenterX;
+    const sourceCenterX = sourceBox.x + sourceBox.width / 2
+    const targetCenterX = targetBox.x + targetBox.width / 2
+    const sourceOnRight = targetCenterX >= sourceCenterX
 
-    const s = anchor(sourceBox, sourceOnRight, edgeData?.fromFieldIndex);
-    const t = anchor(targetBox, !sourceOnRight, edgeData?.toFieldIndex);
-    sEndX = s.x;
-    sEndY = s.y;
-    tEndX = t.x;
-    tEndY = t.y;
-    sDir = sourceOnRight ? 1 : -1;
-    tDir = sourceOnRight ? -1 : 1;
-    showBadges = true;
+    const s = anchor(sourceBox, sourceOnRight, edgeData?.fromFieldIndex)
+    const t = anchor(targetBox, !sourceOnRight, edgeData?.toFieldIndex)
+    sEndX = s.x
+    sEndY = s.y
+    tEndX = t.x
+    tEndY = t.y
+    sDir = sourceOnRight ? 1 : -1
+    tDir = sourceOnRight ? -1 : 1
+    showBadges = true
 
-    [routedPath, labelX, labelY] = getSmoothStepPath({
+    ;[routedPath, labelX, labelY] = getSmoothStepPath({
       sourceX: s.x,
       sourceY: s.y,
       targetX: t.x,
@@ -93,33 +93,36 @@ function RelationEdgeComponent({
       sourcePosition: sourceOnRight ? Position.Right : Position.Left,
       targetPosition: sourceOnRight ? Position.Left : Position.Right,
       borderRadius: 8,
-    });
+    })
   } else if (edgeData?.points && edgeData.points.length > 0) {
-    routedPath = buildPathFromPoints(edgeData.points);
-    const first = edgeData.points[0]!;
-    const last = edgeData.points[edgeData.points.length - 1]!;
-    sEndX = first.x;
-    sEndY = first.y;
-    tEndX = last.x;
-    tEndY = last.y;
-    const mid = edgeData.points[Math.floor(edgeData.points.length / 2)]!;
-    labelX = mid.x;
-    labelY = mid.y;
+    const points = edgeData.points
+    routedPath = buildPathFromPoints(points)
+    const first = points[0]
+    const last = points[points.length - 1]
+    const mid = points[Math.floor(points.length / 2)]
+    if (first && last && mid) {
+      sEndX = first.x
+      sEndY = first.y
+      tEndX = last.x
+      tEndY = last.y
+      labelX = mid.x
+      labelY = mid.y
+    }
   } else {
-    [routedPath, labelX, labelY] = getBezierPath({
+    ;[routedPath, labelX, labelY] = getBezierPath({
       sourceX,
       sourceY,
       targetX,
       targetY,
       sourcePosition,
       targetPosition,
-    });
+    })
   }
 
   const symbols = edgeData?.relation
     ? cardinalitySymbols(edgeData.relation.cardinality)
-    : null;
-  const relationName = edgeData?.relation?.name;
+    : null
+  const relationName = edgeData?.relation?.name
 
   const hoverStyle = hovered
     ? {
@@ -128,7 +131,7 @@ function RelationEdgeComponent({
         strokeDasharray: "6 5",
         animation: "dashdraw 0.5s linear infinite",
       }
-    : null;
+    : null
 
   return (
     <>
@@ -152,11 +155,21 @@ function RelationEdgeComponent({
       />
       {symbols && showBadges ? (
         <EdgeLabelRenderer>
-          <EndpointBadge x={sEndX} y={sEndY} dir={sDir} label={symbols.source} />
-          <EndpointBadge x={tEndX} y={tEndY} dir={tDir} label={symbols.target} />
+          <EndpointBadge
+            x={sEndX}
+            y={sEndY}
+            dir={sDir}
+            label={symbols.source}
+          />
+          <EndpointBadge
+            x={tEndX}
+            y={tEndY}
+            dir={tDir}
+            label={symbols.target}
+          />
           {hovered && relationName ? (
             <div
-              className="pointer-events-none absolute rounded-md border border-blue-500/40 bg-background px-1.5 py-0.5 text-[11px] font-medium text-blue-600 shadow-sm dark:text-blue-400"
+              className="pointer-events-none absolute rounded-md border border-blue-500/40 bg-background px-1.5 py-0.5 font-medium text-[11px] text-blue-600 shadow-sm dark:text-blue-400"
               style={{
                 transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
               }}
@@ -167,7 +180,7 @@ function RelationEdgeComponent({
         </EdgeLabelRenderer>
       ) : null}
     </>
-  );
+  )
 }
 
-export const RelationEdge = memo(RelationEdgeComponent);
+export const RelationEdge = memo(RelationEdgeComponent)

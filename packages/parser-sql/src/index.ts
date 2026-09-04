@@ -1,6 +1,6 @@
-export { sqlAdapter } from "./adapter.js";
-export { detectSqlProject, findSqlFiles } from "./detect.js";
-export { inferSqlDialect } from "./infer-dialect.js";
-export { parsePostgresSql } from "./parse-postgres.js";
-export { parseMysqlSql } from "./parse-mysql.js";
-export { parseSqliteSql } from "./parse-sqlite.js";
+export { sqlAdapter } from "./adapter.js"
+export { detectSqlProject, findSqlFiles } from "./detect.js"
+export { inferSqlDialect } from "./infer-dialect.js"
+export { parseMysqlSql } from "./parse-mysql.js"
+export { parsePostgresSql } from "./parse-postgres.js"
+export { parseSqliteSql } from "./parse-sqlite.js"

@@ -1,9 +1,9 @@
-import { Input } from "@workspace/ui/components/input";
-import { useDiagramStore } from "../../store/diagram-store.js";
+import { Input } from "@workspace/ui/components/input"
+import { useDiagramStore } from "../../store/diagram-store.js"
 
 export function SearchFilter() {
-  const searchQuery = useDiagramStore((state) => state.searchQuery);
-  const setSearchQuery = useDiagramStore((state) => state.setSearchQuery);
+  const searchQuery = useDiagramStore((state) => state.searchQuery)
+  const setSearchQuery = useDiagramStore((state) => state.setSearchQuery)
 
   return (
     <div className="px-2 py-2">
@@ -14,5 +14,5 @@ export function SearchFilter() {
         onChange={(event) => setSearchQuery(event.target.value)}
       />
     </div>
-  );
+  )
 }

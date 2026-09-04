@@ -1,17 +1,18 @@
-import type { Entity, FieldId, UniversalSchema } from "../schema/types.js";
-import { findDuplicateIds, issue } from "./helpers.js";
-import type { ValidationIssue } from "./types.js";
+import type { Entity, FieldId, UniversalSchema } from "../schema/types.js"
+import { findDuplicateIds, issue } from "./helpers.js"
+import type { ValidationIssue } from "./types.js"
 
 export interface EntityValidationContext {
-  fieldById: Map<FieldId, { entity: Entity; fieldName: string }>;
+  fieldById: Map<FieldId, { entity: Entity; fieldName: string }>
 }
 
 /** Validate entity/enum names, duplicate IDs, and missing primary keys. */
-export function validateEntities(
-  schema: UniversalSchema,
-): { issues: ValidationIssue[]; context: EntityValidationContext } {
-  const issues: ValidationIssue[] = [];
-  const fieldById = new Map<FieldId, { entity: Entity; fieldName: string }>();
+export function validateEntities(schema: UniversalSchema): {
+  issues: ValidationIssue[]
+  context: EntityValidationContext
+} {
+  const issues: ValidationIssue[] = []
+  const fieldById = new Map<FieldId, { entity: Entity; fieldName: string }>()
 
   for (const entity of schema.entities) {
     if (!entity.name.trim()) {
@@ -20,13 +21,13 @@ export function validateEntities(
           "empty_entity_name",
           "Entity name must not be empty.",
           "error",
-          `entities.${entity.id}`,
-        ),
-      );
+          `entities.${entity.id}`
+        )
+      )
     }
 
     for (const field of entity.fields) {
-      fieldById.set(field.id, { entity, fieldName: field.name });
+      fieldById.set(field.id, { entity, fieldName: field.name })
     }
   }
 
@@ -37,9 +38,9 @@ export function validateEntities(
           "empty_enum_name",
           "Enum name must not be empty.",
           "error",
-          `enums.${enumDef.id}`,
-        ),
-      );
+          `enums.${enumDef.id}`
+        )
+      )
     }
   }
 
@@ -49,9 +50,9 @@ export function validateEntities(
         "duplicate_id",
         `Duplicate ID "${duplicate.id}" found in ${duplicate.locations.join(", ")}.`,
         "error",
-        duplicate.id,
-      ),
-    );
+        duplicate.id
+      )
+    )
   }
 
   for (const entity of schema.entities) {
@@ -59,9 +60,8 @@ export function validateEntities(
       entity.fields.some((field) => field.isPrimaryKey) ||
       schema.constraints.some(
         (constraint) =>
-          constraint.kind === "primary_key" &&
-          constraint.entityId === entity.id,
-      );
+          constraint.kind === "primary_key" && constraint.entityId === entity.id
+      )
 
     if (!hasPrimaryKey) {
       issues.push(
@@ -69,11 +69,11 @@ export function validateEntities(
           "missing_primary_key",
           `Entity "${entity.name}" is missing a primary key.`,
           "warning",
-          `entities.${entity.id}`,
-        ),
-      );
+          `entities.${entity.id}`
+        )
+      )
     }
   }
 
-  return { issues, context: { fieldById } };
+  return { issues, context: { fieldById } }
 }

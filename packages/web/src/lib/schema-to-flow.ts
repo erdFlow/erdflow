@@ -1,21 +1,21 @@
-import type { Entity, Enum, UniversalSchema } from "@erdflow/core";
+import type { Entity, Enum, UniversalSchema } from "@erdflow/core"
 import {
   ENTITY_HEADER_HEIGHT,
   ENTITY_NODE_WIDTH,
   ENUM_NODE_WIDTH,
   type LayoutResult,
-} from "@erdflow/layout";
-import type { Edge, Node } from "@xyflow/react";
-import type { RelationEdgeData } from "../types/flow-types.js";
-import { foreignKeyRefs } from "./foreign-key-refs.js";
-import { entityNodeHeight, enumNodeHeight } from "./node-dimensions.js";
-import { resolveRelationHandles } from "./relation-handles.js";
+} from "@erdflow/layout"
+import type { Edge, Node } from "@xyflow/react"
+import type { RelationEdgeData } from "../types/flow-types.js"
+import { foreignKeyRefs } from "./foreign-key-refs.js"
+import { entityNodeHeight, enumNodeHeight } from "./node-dimensions.js"
+import { resolveRelationHandles } from "./relation-handles.js"
 
 interface BuildFlowGraphOptions {
-  schema: UniversalSchema;
-  layout: LayoutResult;
-  manualPositions: Record<string, { x: number; y: number }>;
-  collapsedTables: Record<string, boolean>;
+  schema: UniversalSchema
+  layout: LayoutResult
+  manualPositions: Record<string, { x: number; y: number }>
+  collapsedTables: Record<string, boolean>
 }
 
 export function schemaToFlow({
@@ -24,15 +24,15 @@ export function schemaToFlow({
   manualPositions,
   collapsedTables,
 }: BuildFlowGraphOptions): { nodes: Node[]; edges: Edge[] } {
-  const fkRefsByEntity = foreignKeyRefs(schema);
-  const layoutNodeMap = new Map(layout.nodes.map((node) => [node.id, node]));
-  const layoutEdgeMap = new Map(layout.edges.map((edge) => [edge.id, edge]));
-  const nodes: Node[] = [];
+  const fkRefsByEntity = foreignKeyRefs(schema)
+  const layoutNodeMap = new Map(layout.nodes.map((node) => [node.id, node]))
+  const layoutEdgeMap = new Map(layout.edges.map((edge) => [edge.id, edge]))
+  const nodes: Node[] = []
 
   for (const entity of schema.entities) {
-    const layoutNode = layoutNodeMap.get(entity.id);
-    const collapsed = collapsedTables[entity.id] ?? false;
-    const manual = manualPositions[entity.id];
+    const layoutNode = layoutNodeMap.get(entity.id)
+    const collapsed = collapsedTables[entity.id] ?? false
+    const manual = manualPositions[entity.id]
 
     nodes.push({
       id: entity.id,
@@ -53,12 +53,12 @@ export function schemaToFlow({
           ? ENTITY_HEADER_HEIGHT
           : (layoutNode?.height ?? entityNodeHeight(entity)),
       },
-    });
+    })
   }
 
   for (const enumDef of schema.enums) {
-    const layoutNode = layoutNodeMap.get(enumDef.id);
-    const manual = manualPositions[enumDef.id];
+    const layoutNode = layoutNodeMap.get(enumDef.id)
+    const manual = manualPositions[enumDef.id]
 
     nodes.push({
       id: enumDef.id,
@@ -75,12 +75,12 @@ export function schemaToFlow({
         width: layoutNode?.width ?? ENUM_NODE_WIDTH,
         height: layoutNode?.height ?? enumNodeHeight(enumDef),
       },
-    });
+    })
   }
 
   const edges: Edge<RelationEdgeData>[] = schema.relations.map((relation) => {
-    const layoutEdge = layoutEdgeMap.get(relation.id);
-    const handles = resolveRelationHandles(schema, relation);
+    const layoutEdge = layoutEdgeMap.get(relation.id)
+    const handles = resolveRelationHandles(schema, relation)
 
     return {
       id: relation.id,
@@ -96,27 +96,29 @@ export function schemaToFlow({
         fromFieldIndex: handles.fromFieldIndex,
         toFieldIndex: handles.toFieldIndex,
       },
-    };
-  });
+    }
+  })
 
-  return { nodes, edges };
+  return { nodes, edges }
 }
 
 export function updateFlowData(
   schema: UniversalSchema,
   nodes: Node[],
-  collapsedTables: Record<string, boolean>,
+  collapsedTables: Record<string, boolean>
 ): Node[] {
-  const entityMap = new Map(schema.entities.map((entity) => [entity.id, entity]));
-  const enumMap = new Map(schema.enums.map((enumDef) => [enumDef.id, enumDef]));
-  const fkRefsByEntity = foreignKeyRefs(schema);
+  const entityMap = new Map(
+    schema.entities.map((entity) => [entity.id, entity])
+  )
+  const enumMap = new Map(schema.enums.map((enumDef) => [enumDef.id, enumDef]))
+  const fkRefsByEntity = foreignKeyRefs(schema)
 
-  const nextNodes: Node[] = [];
+  const nextNodes: Node[] = []
 
   for (const node of nodes) {
-    const entity = entityMap.get(node.id as Entity["id"]);
+    const entity = entityMap.get(node.id as Entity["id"])
     if (entity) {
-      const collapsed = collapsedTables[node.id] ?? false;
+      const collapsed = collapsedTables[node.id] ?? false
       nextNodes.push({
         ...node,
         data: {
@@ -129,11 +131,11 @@ export function updateFlowData(
           ...node.style,
           height: collapsed ? ENTITY_HEADER_HEIGHT : entityNodeHeight(entity),
         },
-      });
-      continue;
+      })
+      continue
     }
 
-    const enumDef = enumMap.get(node.id as Enum["id"]);
+    const enumDef = enumMap.get(node.id as Enum["id"])
     if (enumDef) {
       nextNodes.push({
         ...node,
@@ -141,9 +143,9 @@ export function updateFlowData(
           kind: "enum" as const,
           enumDef,
         },
-      });
+      })
     }
   }
 
-  return nextNodes;
+  return nextNodes
 }
