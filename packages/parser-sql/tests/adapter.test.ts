@@ -4,8 +4,8 @@ import { fileURLToPath } from "node:url";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { createEntityId, validateSchema } from "@erdflow/core";
-import { sqlAdapter } from "./adapter.js";
-import { inferSqlDialect } from "./infer-dialect.js";
+import { sqlAdapter } from "../src/adapter.js";
+import { inferSqlDialect } from "../src/infer-dialect.js";
 
 const fixtureDir = join(dirname(fileURLToPath(import.meta.url)), "../fixtures");
 

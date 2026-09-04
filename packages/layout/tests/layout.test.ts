@@ -1,30 +1,93 @@
-import { readFileSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
 import assert from "node:assert/strict";
 import test from "node:test";
-import { createRelationId } from "@erdflow/core";
-import { dbmlAdapter } from "@erdflow/parser-dbml";
+import {
+  createEntityId,
+  createEnumId,
+  createFieldId,
+  createRelationId,
+  type UniversalSchema,
+} from "@erdflow/core";
 import {
   clearLayoutCache,
   defaultLayoutCache,
   layoutSchema,
   schemaTopologyHash,
-} from "./index.js";
+} from "../src/index.js";
 
-const fixtureDir = join(
-  dirname(fileURLToPath(import.meta.url)),
-  "../../parser-dbml/fixtures",
-);
+function createBasicSchema(): UniversalSchema {
+  const usersId = createEntityId("Users");
+  const ordersId = createEntityId("Orders");
+  const statusEnumId = createEnumId("OrderStatus");
+  const usersIdField = createFieldId("Users", "id");
+  const ordersIdField = createFieldId("Orders", "id");
+  const ordersUserIdField = createFieldId("Orders", "userId");
 
-async function loadBasicSchema() {
-  const input = readFileSync(join(fixtureDir, "basic.dbml"), "utf8");
-  return dbmlAdapter.parse(input, { filePath: "basic.dbml" });
+  return {
+    entities: [
+      {
+        id: usersId,
+        name: "Users",
+        kind: "table",
+        fields: [
+          {
+            id: usersIdField,
+            name: "id",
+            type: { name: "Int" },
+            nullable: false,
+            isPrimaryKey: true,
+          },
+          {
+            id: createFieldId("Users", "email"),
+            name: "email",
+            type: { name: "String" },
+            nullable: false,
+          },
+        ],
+      },
+      {
+        id: ordersId,
+        name: "Orders",
+        kind: "table",
+        fields: [
+          {
+            id: ordersIdField,
+            name: "id",
+            type: { name: "Int" },
+            nullable: false,
+            isPrimaryKey: true,
+          },
+          {
+            id: ordersUserIdField,
+            name: "userId",
+            type: { name: "Int" },
+            nullable: false,
+          },
+        ],
+      },
+    ],
+    enums: [
+      {
+        id: statusEnumId,
+        name: "OrderStatus",
+        values: ["pending", "paid", "cancelled"],
+      },
+    ],
+    relations: [
+      {
+        id: createRelationId("Orders", "Users", "userId"),
+        from: { entityId: ordersId, fieldIds: [ordersUserIdField] },
+        to: { entityId: usersId, fieldIds: [usersIdField] },
+        cardinality: "one-to-many",
+      },
+    ],
+    indexes: [],
+    constraints: [],
+  };
 }
 
 test("layoutSchema produces nodes for all entities and enums", async () => {
   clearLayoutCache();
-  const schema = await loadBasicSchema();
+  const schema = createBasicSchema();
   const result = await layoutSchema(schema);
 
   assert.equal(result.nodes.length, schema.entities.length + schema.enums.length);
@@ -49,7 +112,7 @@ test("layoutSchema produces nodes for all entities and enums", async () => {
 
 test("layoutSchema produces edges for relations", async () => {
   clearLayoutCache();
-  const schema = await loadBasicSchema();
+  const schema = createBasicSchema();
   const result = await layoutSchema(schema);
 
   assert.equal(result.edges.length, schema.relations.length);
@@ -64,7 +127,7 @@ test("layoutSchema produces edges for relations", async () => {
 
 test("layoutSchema returns cached result on second call", async () => {
   clearLayoutCache();
-  const schema = await loadBasicSchema();
+  const schema = createBasicSchema();
 
   const first = await layoutSchema(schema);
   const second = await layoutSchema(schema);
@@ -75,7 +138,7 @@ test("layoutSchema returns cached result on second call", async () => {
 
 test("layoutSchema recomputes when topology changes", async () => {
   clearLayoutCache();
-  const schema = await loadBasicSchema();
+  const schema = createBasicSchema();
   const firstHash = schemaTopologyHash(schema);
 
   const first = await layoutSchema(schema);
@@ -85,9 +148,9 @@ test("layoutSchema recomputes when topology changes", async () => {
     relations: [
       ...schema.relations,
       {
-        id: createRelationId("orders", "products"),
-        from: { entityId: schema.entities[1]!.id },
-        to: { entityId: schema.entities[0]!.id },
+        id: createRelationId("Orders", "Users", "reverse"),
+        from: { entityId: schema.entities[0]!.id },
+        to: { entityId: schema.entities[1]!.id },
         cardinality: "one-to-many" as const,
       },
     ],
@@ -101,7 +164,7 @@ test("layoutSchema recomputes when topology changes", async () => {
   assert.equal(defaultLayoutCache.size, 2);
 });
 
-test("schemaTopologyHash is stable for identical schema", async () => {
-  const schema = await loadBasicSchema();
+test("schemaTopologyHash is stable for identical schema", () => {
+  const schema = createBasicSchema();
   assert.equal(schemaTopologyHash(schema), schemaTopologyHash(schema));
 });

@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { createEntityId, validateSchema } from "@erdflow/core";
-import { prismaAdapter } from "./adapter.js";
+import { prismaAdapter } from "../src/adapter.js";
 
 const fixtureDir = join(dirname(fileURLToPath(import.meta.url)), "../fixtures");
 
