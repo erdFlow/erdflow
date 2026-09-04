@@ -30,6 +30,7 @@ import {
   SETTINGS_LABEL,
   SHOW_MINIMAP_LABEL,
   SHOW_RELATIONSHIPS_LABEL,
+  SHOW_SQL_VIEW_LABEL,
   THEME_DARK_LABEL,
   THEME_LABEL,
   THEME_LIGHT_LABEL,
@@ -88,6 +89,8 @@ export function Header() {
   const showRelations = useDiagramStore((state) => state.showRelations)
   const showMinimap = useDiagramStore((state) => state.showMinimap)
   const setShowMinimap = useDiagramStore((state) => state.setShowMinimap)
+  const showSqlView = useDiagramStore((state) => state.showSqlView)
+  const setShowSqlView = useDiagramStore((state) => state.setShowSqlView)
   const canvasControls = useDiagramStore((state) => state.canvasControls)
   const clearFocus = useDiagramStore((state) => state.clearFocus)
   const setShowRelations = useDiagramStore((state) => state.setShowRelations)
@@ -122,6 +125,11 @@ export function Header() {
                 label={SHOW_MINIMAP_LABEL}
                 checked={showMinimap}
                 onToggle={() => setShowMinimap(!showMinimap)}
+              />
+              <ViewToggleItem
+                label={SHOW_SQL_VIEW_LABEL}
+                checked={showSqlView}
+                onToggle={() => setShowSqlView(!showSqlView)}
               />
             </DropdownMenuSubContent>
           </DropdownMenuSub>

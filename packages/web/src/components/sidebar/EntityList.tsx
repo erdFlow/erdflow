@@ -115,7 +115,10 @@ export function EntityList() {
 
   return (
     <>
-      <CollapsibleSection label={SIDEBAR_SECTION.TABLES} count={entities.length}>
+      <CollapsibleSection
+        label={SIDEBAR_SECTION.TABLES}
+        count={entities.length}
+      >
         {entities.map((entity) => (
           <SidebarMenuItem key={entity.id}>
             <SidebarMenuButton

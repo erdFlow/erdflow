@@ -14,6 +14,7 @@ export const useDiagramStore = create<DiagramState>((set, get) => ({
   focusedEntityId: null,
   showRelations: true,
   showMinimap: false,
+  showSqlView: false,
   zoom: 1,
   collapsedTables: {},
   manualPositions: {},
@@ -43,6 +44,7 @@ export const useDiagramStore = create<DiagramState>((set, get) => ({
   setFocusedEntityId: (focusedEntityId) => set({ focusedEntityId }),
   setShowRelations: (showRelations) => set({ showRelations }),
   setShowMinimap: (showMinimap) => set({ showMinimap }),
+  setShowSqlView: (showSqlView) => set({ showSqlView }),
   setZoom: (zoom) => set({ zoom }),
   toggleTableCollapsed: (entityId) =>
     set((state) => {

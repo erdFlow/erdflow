@@ -7,12 +7,13 @@ export {
   type NodeBox,
   nodeBox,
 } from "./edge-geometry.js"
-export { getConnectedIds } from "./focus-utils.js"
+export { entityToSql } from "./entity-to-sql.js"
 export {
   type EnumUsage,
   enumUsages,
   formatEnumUsage,
 } from "./enum-usages.js"
+export { getConnectedIds } from "./focus-utils.js"
 export { foreignKeyRefs } from "./foreign-key-refs.js"
 export {
   type MergeSchemaOptions,

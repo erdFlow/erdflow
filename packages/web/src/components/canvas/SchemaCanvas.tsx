@@ -19,6 +19,7 @@ import {
 import { getConnectedIds } from "../../lib/focus-utils.js"
 import { useDiagramStore } from "../../store/diagram-store.js"
 import type { DiagramNodeData } from "../../types/flow-types.js"
+import { useTheme } from "../theme-provider.js"
 import { edgeTypes, nodeTypes } from "./node-types.js"
 
 function CanvasControlsRegistrar() {
@@ -53,6 +54,7 @@ function CanvasControlsRegistrar() {
 }
 
 function SchemaCanvasInner() {
+  const { resolvedTheme } = useTheme()
   const schema = useDiagramStore((state) => state.schema)
   const nodes = useDiagramStore((state) => state.nodes)
   const edges = useDiagramStore((state) => state.edges)
@@ -66,6 +68,7 @@ function SchemaCanvasInner() {
   const setManualPosition = useDiagramStore((state) => state.setManualPosition)
   const onNodesChange = useDiagramStore((state) => state.onNodesChange)
   const setZoom = useDiagramStore((state) => state.setZoom)
+  const isDark = resolvedTheme === "dark"
 
   const normalizedQuery = searchQuery.trim().toLowerCase()
 
@@ -150,6 +153,7 @@ function SchemaCanvasInner() {
   return (
     <ReactFlow
       className="size-full bg-background"
+      colorMode={resolvedTheme}
       nodes={displayNodes}
       edges={displayEdges}
       nodeTypes={nodeTypes}
@@ -165,9 +169,21 @@ function SchemaCanvasInner() {
       proOptions={{ hideAttribution: true }}
     >
       <CanvasControlsRegistrar />
-      <Background />
-      <Controls />
-      {showMinimap ? <MiniMap /> : null}
+      <Background gap={16} size={1} />
+      <Controls className="!border !border-border !shadow-md" />
+      {showMinimap ? (
+        <MiniMap
+          className="!rounded-md !border !border-border !shadow-md"
+          pannable
+          zoomable
+          nodeStrokeWidth={2}
+          bgColor={isDark ? "var(--card)" : undefined}
+          maskColor={
+            isDark ? "rgba(0, 0, 0, 0.55)" : "rgba(240, 240, 240, 0.6)"
+          }
+          nodeColor={isDark ? "var(--muted-foreground)" : undefined}
+        />
+      ) : null}
     </ReactFlow>
   )
 }

@@ -11,7 +11,7 @@ export function useCanvasHotkeys() {
       {
         hotkey: HOTKEY_ZOOM_IN,
         callback: () => {
-          canvasControls?.zoomIn()  
+          canvasControls?.zoomIn()
         },
       },
       {

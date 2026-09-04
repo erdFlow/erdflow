@@ -23,6 +23,7 @@ export interface DiagramState {
   focusedEntityId: string | null
   showRelations: boolean
   showMinimap: boolean
+  showSqlView: boolean
   zoom: number
   collapsedTables: Record<string, boolean>
   manualPositions: Record<string, { x: number; y: number }>
@@ -34,6 +35,7 @@ export interface DiagramState {
   setFocusedEntityId: (entityId: string | null) => void
   setShowRelations: (show: boolean) => void
   setShowMinimap: (show: boolean) => void
+  setShowSqlView: (show: boolean) => void
   setZoom: (zoom: number) => void
   toggleTableCollapsed: (entityId: string) => void
   onNodesChange: (changes: NodeChange[]) => void

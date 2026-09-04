@@ -54,6 +54,12 @@ export function enumUsedByLabel(refs: string[]): string {
 
 export const SHOW_RELATIONSHIPS_LABEL = "Show relationships"
 export const SHOW_MINIMAP_LABEL = "Show minimap"
+export const SHOW_SQL_VIEW_LABEL = "SQL View"
+export const SQL_VIEW_EMPTY_LABEL = "Select a table to view SQL"
+export const SQL_VIEW_EMPTY_DESCRIPTION =
+  "Click a table on the canvas or in the sidebar."
+export const SQL_VIEW_COPY_LABEL = "Copy SQL"
+export const SQL_VIEW_COPIED_LABEL = "Copied"
 export const SETTINGS_LABEL = "Settings"
 export const THEME_LABEL = "Theme"
 export const THEME_LIGHT_LABEL = "Light"
