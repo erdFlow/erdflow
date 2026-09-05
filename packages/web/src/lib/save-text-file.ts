@@ -1,19 +1,20 @@
 /**
- * Save text via the system file picker when available; otherwise trigger a
- * browser download. Never opens an in-app modal.
+ * Save text or binary via the system file picker when available; otherwise
+ * trigger a browser download. Never opens an in-app modal.
  */
-export async function saveTextFile(options: {
-  contents: string
-  suggestedName: string
-  description?: string
-  mimeType?: string
-  extension?: string
-}): Promise<"saved" | "cancelled" | "downloaded"> {
-  const mimeType = options.mimeType ?? "text/plain;charset=utf-8"
-  const extension = options.extension ?? ".txt"
-  const acceptKey = mimeType.split(";")[0] ?? "text/plain"
 
-  const picker = (
+type SaveResult = "saved" | "cancelled" | "downloaded"
+
+function getSaveFilePicker():
+  | ((options?: {
+      suggestedName?: string
+      types?: Array<{
+        description?: string
+        accept: Record<string, string[]>
+      }>
+    }) => Promise<FileSystemFileHandle>)
+  | undefined {
+  return (
     window as Window & {
       showSaveFilePicker?: (options?: {
         suggestedName?: string
@@ -24,6 +25,33 @@ export async function saveTextFile(options: {
       }) => Promise<FileSystemFileHandle>
     }
   ).showSaveFilePicker
+}
+
+function triggerAnchorDownload(blob: Blob, suggestedName: string): void {
+  const url = URL.createObjectURL(blob)
+  try {
+    const anchor = document.createElement("a")
+    anchor.href = url
+    anchor.download = suggestedName
+    anchor.rel = "noopener"
+    anchor.style.display = "none"
+    document.body.append(anchor)
+    anchor.click()
+    anchor.remove()
+  } finally {
+    URL.revokeObjectURL(url)
+  }
+}
+
+export async function saveBlobFile(options: {
+  blob: Blob
+  suggestedName: string
+  description?: string
+  mimeType: string
+  extension: string
+}): Promise<SaveResult> {
+  const acceptKey = options.mimeType.split(";")[0] ?? options.mimeType
+  const picker = getSaveFilePicker()
 
   if (typeof picker === "function") {
     try {
@@ -33,14 +61,14 @@ export async function saveTextFile(options: {
           {
             description: options.description ?? "File",
             accept: {
-              [acceptKey]: [extension],
+              [acceptKey]: [options.extension],
             },
           },
         ],
       })
       const writable = await handle.createWritable()
       try {
-        await writable.write(options.contents)
+        await writable.write(options.blob)
       } finally {
         await writable.close()
       }
@@ -49,24 +77,29 @@ export async function saveTextFile(options: {
       if (error instanceof DOMException && error.name === "AbortError") {
         return "cancelled"
       }
-      // Fall through to download for unsupported / permission errors.
     }
   }
 
-  const blob = new Blob([options.contents], { type: mimeType })
-  const url = URL.createObjectURL(blob)
-  try {
-    const anchor = document.createElement("a")
-    anchor.href = url
-    anchor.download = options.suggestedName
-    anchor.rel = "noopener"
-    anchor.style.display = "none"
-    document.body.append(anchor)
-    anchor.click()
-    anchor.remove()
-  } finally {
-    URL.revokeObjectURL(url)
-  }
-
+  triggerAnchorDownload(options.blob, options.suggestedName)
   return "downloaded"
+}
+
+export async function saveTextFile(options: {
+  contents: string
+  suggestedName: string
+  description?: string
+  mimeType?: string
+  extension?: string
+}): Promise<SaveResult> {
+  const mimeType = options.mimeType ?? "text/plain;charset=utf-8"
+  const extension = options.extension ?? ".txt"
+  const blob = new Blob([options.contents], { type: mimeType })
+
+  return saveBlobFile({
+    blob,
+    suggestedName: options.suggestedName,
+    description: options.description,
+    mimeType: mimeType.split(";")[0] ?? "text/plain",
+    extension,
+  })
 }

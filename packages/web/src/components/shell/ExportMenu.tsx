@@ -4,47 +4,74 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@workspace/ui/components/dropdown-menu"
-import {
-  DownloadIcon,
-  FileCode2Icon,
-  FileTypeIcon,
-  ImageIcon,
-} from "lucide-react"
+import { DownloadIcon, FileCode2Icon, ImageIcon } from "lucide-react"
 import {
   EXPORT_ARIA_LABEL,
   EXPORT_PNG_LABEL,
-  EXPORT_SQL_LABEL,
   EXPORT_SVG_LABEL,
 } from "../../data/labels.js"
 import {
-  schemaToSql,
-  suggestedSqlFilename,
-} from "../../lib/entity-to-sql.js"
-import { saveTextFile } from "../../lib/save-text-file.js"
+  exportDiagramPng,
+  exportDiagramSvg,
+  suggestedDiagramFilename,
+} from "../../lib/export-diagram.js"
+import { saveBlobFile, saveTextFile } from "../../lib/save-text-file.js"
 import { useDiagramStore } from "../../store/diagram-store.js"
+import { useTheme } from "../theme-provider.js"
 
-async function exportFullSchemaSql(): Promise<void> {
-  const schema = useDiagramStore.getState().schema
-  if (!schema) {
-    return
-  }
-
-  const sql = schemaToSql(schema)
-  if (!sql.trim()) {
-    return
-  }
-
-  await saveTextFile({
-    contents: `${sql}\n`,
-    suggestedName: suggestedSqlFilename(schema),
-    description: "SQL",
-    mimeType: "text/plain",
-    extension: ".sql",
-  })
+function exportBackgroundColor(isDark: boolean): string {
+  return isDark ? "#0a0a0a" : "#ffffff"
 }
 
-/** Header export menu. SQL saves the full schema via the system file picker. */
+async function exportDiagramAsPng(backgroundColor: string): Promise<void> {
+  const schema = useDiagramStore.getState().schema
+  if (!schema || useDiagramStore.getState().nodes.length === 0) {
+    return
+  }
+
+  try {
+    const blob = await exportDiagramPng({ backgroundColor })
+    await saveBlobFile({
+      blob,
+      suggestedName: suggestedDiagramFilename(schema, ".png"),
+      description: "PNG",
+      mimeType: "image/png",
+      extension: ".png",
+    })
+  } catch {
+    // Quiet failure: missing viewport / empty diagram / user cancel already handled
+  }
+}
+
+async function exportDiagramAsSvg(backgroundColor: string): Promise<void> {
+  const schema = useDiagramStore.getState().schema
+  if (!schema || useDiagramStore.getState().nodes.length === 0) {
+    return
+  }
+
+  try {
+    const svg = await exportDiagramSvg({ backgroundColor })
+    if (!svg.trim()) {
+      return
+    }
+    await saveTextFile({
+      contents: svg.endsWith("\n") ? svg : `${svg}\n`,
+      suggestedName: suggestedDiagramFilename(schema, ".svg"),
+      description: "SVG",
+      mimeType: "image/svg+xml",
+      extension: ".svg",
+    })
+  } catch {
+    // Quiet failure
+  }
+}
+
+/** Header export menu: PNG/SVG capture of the diagram canvas. */
 export function ExportMenu() {
+  const { resolvedTheme } = useTheme()
+  const isDark = resolvedTheme === "dark"
+  const backgroundColor = exportBackgroundColor(isDark)
+
   return (
     <DropdownMenuTrigger>
       <Button variant="ghost" size="icon-sm" aria-label={EXPORT_ARIA_LABEL}>
@@ -53,26 +80,21 @@ export function ExportMenu() {
       <DropdownMenu placement="bottom end" className="min-w-36">
         <DropdownMenuItem
           textValue={EXPORT_PNG_LABEL}
-          onAction={() => undefined}
+          onAction={() => {
+            void exportDiagramAsPng(backgroundColor)
+          }}
         >
           <ImageIcon />
           {EXPORT_PNG_LABEL}
         </DropdownMenuItem>
         <DropdownMenuItem
           textValue={EXPORT_SVG_LABEL}
-          onAction={() => undefined}
+          onAction={() => {
+            void exportDiagramAsSvg(backgroundColor)
+          }}
         >
           <FileCode2Icon />
           {EXPORT_SVG_LABEL}
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          textValue={EXPORT_SQL_LABEL}
-          onAction={() => {
-            void exportFullSchemaSql()
-          }}
-        >
-          <FileTypeIcon />
-          {EXPORT_SQL_LABEL}
         </DropdownMenuItem>
       </DropdownMenu>
     </DropdownMenuTrigger>

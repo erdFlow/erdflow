@@ -69,6 +69,7 @@ function RelationEdgeComponent({
   style,
 }: EdgeProps) {
   const edgeData = data as RelationEdgeData | undefined
+  const simplified = Boolean(edgeData?.simplified)
   const sourceBox = nodeBox(useInternalNode(source))
   const targetBox = nodeBox(useInternalNode(target))
   const [hovered, setHovered] = useState(false)
@@ -84,7 +85,16 @@ function RelationEdgeComponent({
   let tDir = 0
   let showBadges = false
 
-  if (sourceBox && targetBox) {
+  if (simplified) {
+    ;[routedPath, labelX, labelY] = getBezierPath({
+      sourceX,
+      sourceY,
+      targetX,
+      targetY,
+      sourcePosition,
+      targetPosition,
+    })
+  } else if (sourceBox && targetBox) {
     const sourceCenterX = sourceBox.x + sourceBox.width / 2
     const targetCenterX = targetBox.x + targetBox.width / 2
     const sourceOnRight = targetCenterX >= sourceCenterX
@@ -134,18 +144,19 @@ function RelationEdgeComponent({
   }
 
   const schema = useDiagramStore((state) => state.schema)
-  const symbols = edgeData?.relation
-    ? cardinalitySymbols(edgeData.relation.cardinality)
-    : null
+  const symbols =
+    !simplified && edgeData?.relation
+      ? cardinalitySymbols(edgeData.relation.cardinality)
+      : null
   const relationLabel =
-    edgeData?.relation && schema
+    !simplified && edgeData?.relation && schema
       ? formatRelationLabel(edgeData.relation, schema.entities)
-      : (edgeData?.relation?.name ?? null)
+      : null
   const opacity = typeof style?.opacity === "number" ? style.opacity : 1
   const isDimmed = opacity < 1
 
   const hoverStyle =
-    hovered && !isDimmed
+    hovered && !isDimmed && !simplified
       ? {
           stroke: EDGE_HOVER_STROKE,
           strokeWidth: EDGE_HOVER_STROKE_WIDTH,
@@ -166,7 +177,7 @@ function RelationEdgeComponent({
       <BaseEdge
         id={id}
         path={routedPath}
-        markerEnd={isDimmed ? undefined : markerEnd}
+        markerEnd={isDimmed || simplified ? undefined : markerEnd}
         interactionWidth={0}
         style={{
           ...style,
@@ -175,20 +186,21 @@ function RelationEdgeComponent({
           pointerEvents: "none",
         }}
       />
-      {/* wide transparent hit area on top for hover detection */}
-      <path
-        d={routedPath}
-        fill="none"
-        stroke="transparent"
-        strokeWidth={EDGE_HIT_STROKE_WIDTH}
-        strokeLinecap="round"
-        style={{
-          pointerEvents: isDimmed ? "none" : "stroke",
-          cursor: "pointer",
-        }}
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
-      />
+      {simplified ? null : (
+        <path
+          d={routedPath}
+          fill="none"
+          stroke="transparent"
+          strokeWidth={EDGE_HIT_STROKE_WIDTH}
+          strokeLinecap="round"
+          style={{
+            pointerEvents: isDimmed ? "none" : "stroke",
+            cursor: "pointer",
+          }}
+          onMouseEnter={() => setHovered(true)}
+          onMouseLeave={() => setHovered(false)}
+        />
+      )}
       {symbols && showBadges ? (
         <EdgeLabelRenderer>
           <EndpointBadge
