@@ -17,8 +17,6 @@ export const FOCUS_EDGE_OPACITY = 0.2
 export const FOCUS_NODE_ZOOM = 0.7
 /** Smooth pan/zoom duration when focusing a table (ms). */
 export const FOCUS_VIEW_DURATION_MS = 400
-/** Gap between tables in the temporary search+focus pack (ELK-like). */
-export const FOCUS_PACK_GAP = 80
 export const CANVAS_MIN_HEIGHT_CLASS = "min-h-[480px]"
 
 export const FALLBACK_NODE_WIDTH = 220
