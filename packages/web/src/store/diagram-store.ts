@@ -21,6 +21,7 @@ export const useDiagramStore = create<DiagramState>((set, get) => ({
   connectionStatus: "connecting",
   searchQuery: "",
   focusedEntityId: null,
+  selectedEdgeId: null,
   showRelations: true,
   showMinimap: false,
   showSqlView: false,
@@ -47,6 +48,7 @@ export const useDiagramStore = create<DiagramState>((set, get) => ({
       nodes: merged.nodes,
       edges: merged.edges,
       error: null,
+      selectedEdgeId: null,
       selectedSchemaVersion:
         schema.meta?.version ??
         schema.meta?.versions?.[0] ??
@@ -58,6 +60,7 @@ export const useDiagramStore = create<DiagramState>((set, get) => ({
   setConnectionStatus: (connectionStatus) => set({ connectionStatus }),
   setSearchQuery: (searchQuery) => set({ searchQuery }),
   setFocusedEntityId: (focusedEntityId) => set({ focusedEntityId }),
+  setSelectedEdgeId: (selectedEdgeId) => set({ selectedEdgeId }),
   setShowRelations: (showRelations) => set({ showRelations }),
   setShowMinimap: (showMinimap) => set({ showMinimap }),
   setShowSqlView: (showSqlView) => set({ showSqlView }),
@@ -108,5 +111,5 @@ export const useDiagramStore = create<DiagramState>((set, get) => ({
       ),
     })),
   setCanvasControls: (canvasControls) => set({ canvasControls }),
-  clearFocus: () => set({ focusedEntityId: null }),
+  clearFocus: () => set({ focusedEntityId: null, selectedEdgeId: null }),
 }))

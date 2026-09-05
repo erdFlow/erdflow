@@ -9,8 +9,6 @@ export const UNKNOWN_SCHEMA_ERROR = "Unknown schema error"
 
 export const FIT_VIEW_PADDING = 0.2
 export const CANVAS_MIN_ZOOM = 0.2
-/** Below this zoom, table/enum bodies collapse (LOD) for large-diagram performance. */
-export const LOD_COLLAPSE_ZOOM = 0.45
 /** Hide MiniMap automatically when the graph has this many nodes or more. */
 export const MINIMAP_AUTO_HIDE_NODE_COUNT = 80
 export const FOCUS_NODE_OPACITY = 0.25

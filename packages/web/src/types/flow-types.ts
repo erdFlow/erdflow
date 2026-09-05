@@ -23,8 +23,6 @@ export interface EnumNodeData {
   enumDef: Enum
   /** Tables/fields that reference this enum by type name. */
   usages: EnumUsageRef[]
-  /** When true (LOD / zoomed out), hide enum values and show header only. */
-  compact?: boolean
   [key: string]: unknown
 }
 
@@ -38,7 +36,5 @@ export interface RelationEdgeData {
   fromFieldIndex?: number
   /** Row index of the anchored field in the target table, if known. */
   toFieldIndex?: number
-  /** When true (LOD / zoomed out), skip badges/labels and use a cheap path. */
-  simplified?: boolean
   [key: string]: unknown
 }

@@ -69,10 +69,12 @@ function RelationEdgeComponent({
   style,
 }: EdgeProps) {
   const edgeData = data as RelationEdgeData | undefined
-  const simplified = Boolean(edgeData?.simplified)
   const sourceBox = nodeBox(useInternalNode(source))
   const targetBox = nodeBox(useInternalNode(target))
   const [hovered, setHovered] = useState(false)
+  const selectedEdgeId = useDiagramStore((state) => state.selectedEdgeId)
+  const setSelectedEdgeId = useDiagramStore((state) => state.setSelectedEdgeId)
+  const isActive = hovered || selectedEdgeId === id
 
   let routedPath: string
   let labelX = (sourceX + targetX) / 2
@@ -85,16 +87,7 @@ function RelationEdgeComponent({
   let tDir = 0
   let showBadges = false
 
-  if (simplified) {
-    ;[routedPath, labelX, labelY] = getBezierPath({
-      sourceX,
-      sourceY,
-      targetX,
-      targetY,
-      sourcePosition,
-      targetPosition,
-    })
-  } else if (sourceBox && targetBox) {
+  if (sourceBox && targetBox) {
     const sourceCenterX = sourceBox.x + sourceBox.width / 2
     const targetCenterX = targetBox.x + targetBox.width / 2
     const sourceOnRight = targetCenterX >= sourceCenterX
@@ -144,19 +137,18 @@ function RelationEdgeComponent({
   }
 
   const schema = useDiagramStore((state) => state.schema)
-  const symbols =
-    !simplified && edgeData?.relation
-      ? cardinalitySymbols(edgeData.relation.cardinality)
-      : null
+  const symbols = edgeData?.relation
+    ? cardinalitySymbols(edgeData.relation.cardinality)
+    : null
   const relationLabel =
-    !simplified && edgeData?.relation && schema
+    edgeData?.relation && schema
       ? formatRelationLabel(edgeData.relation, schema.entities)
-      : null
+      : (edgeData?.relation?.name ?? null)
   const opacity = typeof style?.opacity === "number" ? style.opacity : 1
   const isDimmed = opacity < 1
 
-  const hoverStyle =
-    hovered && !isDimmed && !simplified
+  const activeStyle =
+    isActive && !isDimmed
       ? {
           stroke: EDGE_HOVER_STROKE,
           strokeWidth: EDGE_HOVER_STROKE_WIDTH,
@@ -177,30 +169,32 @@ function RelationEdgeComponent({
       <BaseEdge
         id={id}
         path={routedPath}
-        markerEnd={isDimmed || simplified ? undefined : markerEnd}
+        markerEnd={isDimmed ? undefined : markerEnd}
         interactionWidth={0}
         style={{
           ...style,
           ...dimmedStyle,
-          ...hoverStyle,
+          ...activeStyle,
           pointerEvents: "none",
         }}
       />
-      {simplified ? null : (
-        <path
-          d={routedPath}
-          fill="none"
-          stroke="transparent"
-          strokeWidth={EDGE_HIT_STROKE_WIDTH}
-          strokeLinecap="round"
-          style={{
-            pointerEvents: isDimmed ? "none" : "stroke",
-            cursor: "pointer",
-          }}
-          onMouseEnter={() => setHovered(true)}
-          onMouseLeave={() => setHovered(false)}
-        />
-      )}
+      <path
+        d={routedPath}
+        fill="none"
+        stroke="transparent"
+        strokeWidth={EDGE_HIT_STROKE_WIDTH}
+        strokeLinecap="round"
+        style={{
+          pointerEvents: isDimmed ? "none" : "stroke",
+          cursor: "pointer",
+        }}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        onClick={(event) => {
+          event.stopPropagation()
+          setSelectedEdgeId(id)
+        }}
+      />
       {symbols && showBadges ? (
         <EdgeLabelRenderer>
           <EndpointBadge
@@ -217,7 +211,7 @@ function RelationEdgeComponent({
             label={symbols.target}
             opacity={opacity}
           />
-          {hovered && relationLabel && !isDimmed ? (
+          {isActive && relationLabel && !isDimmed ? (
             <div
               className="pointer-events-none absolute z-[10000] whitespace-nowrap rounded-md border border-blue-500/40 bg-background px-2.5 py-1 font-medium text-[11px] text-blue-600 shadow-md dark:text-blue-400"
               style={{

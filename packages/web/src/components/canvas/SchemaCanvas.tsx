@@ -1,4 +1,3 @@
-import { ENTITY_HEADER_HEIGHT } from "@erdflow/layout"
 import {
   Background,
   Controls,
@@ -17,7 +16,6 @@ import {
   FIT_VIEW_PADDING,
   FOCUS_EDGE_OPACITY,
   FOCUS_NODE_OPACITY,
-  LOD_COLLAPSE_ZOOM,
   MINIMAP_AUTO_HIDE_NODE_COUNT,
 } from "../../data/constants.js"
 import { getConnectedIds } from "../../lib/focus-utils.js"
@@ -66,15 +64,14 @@ function SchemaCanvasInner() {
   const focusedEntityId = useDiagramStore((state) => state.focusedEntityId)
   const showRelations = useDiagramStore((state) => state.showRelations)
   const showMinimap = useDiagramStore((state) => state.showMinimap)
-  const zoom = useDiagramStore((state) => state.zoom)
   const setFocusedEntityId = useDiagramStore(
     (state) => state.setFocusedEntityId
   )
+  const setSelectedEdgeId = useDiagramStore((state) => state.setSelectedEdgeId)
   const setManualPosition = useDiagramStore((state) => state.setManualPosition)
   const onNodesChange = useDiagramStore((state) => state.onNodesChange)
   const setZoom = useDiagramStore((state) => state.setZoom)
   const isDark = resolvedTheme === "dark"
-  const lodCollapsed = zoom < LOD_COLLAPSE_ZOOM
   const showMinimapEffective =
     showMinimap && nodes.length < MINIMAP_AUTO_HIDE_NODE_COUNT
 
@@ -105,68 +102,21 @@ function SchemaCanvasInner() {
         opacity = focusSets.nodeIds.has(node.id) ? 1 : FOCUS_NODE_OPACITY
       }
 
-      const nodeData = node.data as DiagramNodeData
-      const forceCollapsed = lodCollapsed
-      const collapsed =
-        nodeData.kind === "entity"
-          ? nodeData.collapsed || forceCollapsed
-          : forceCollapsed
-
-      const nextHeight =
-        nodeData.kind === "entity" && collapsed
-          ? ENTITY_HEADER_HEIGHT
-          : nodeData.kind === "enum" && forceCollapsed
-            ? ENTITY_HEADER_HEIGHT
-            : node.style?.height
-
       const currentOpacity = node.style?.opacity ?? 1
-      const dataCollapsed =
-        nodeData.kind === "entity"
-          ? nodeData.collapsed
-          : Boolean(nodeData.compact)
-      const sameDataCollapsed = dataCollapsed === collapsed
-      const sameHeight = node.style?.height === nextHeight
-
-      if (
-        node.hidden === hidden &&
-        currentOpacity === opacity &&
-        sameDataCollapsed &&
-        sameHeight
-      ) {
+      if (node.hidden === hidden && currentOpacity === opacity) {
         return node
-      }
-
-      if (nodeData.kind === "entity") {
-        return {
-          ...node,
-          hidden,
-          data: {
-            ...nodeData,
-            collapsed,
-          },
-          style: {
-            ...node.style,
-            opacity,
-            height: nextHeight,
-          },
-        }
       }
 
       return {
         ...node,
         hidden,
-        data: {
-          ...nodeData,
-          compact: forceCollapsed,
-        },
         style: {
           ...node.style,
           opacity,
-          ...(forceCollapsed ? { height: ENTITY_HEADER_HEIGHT } : null),
         },
       }
     })
-  }, [focusSets, lodCollapsed, nodes, normalizedQuery])
+  }, [focusSets, nodes, normalizedQuery])
 
   const displayEdges = useMemo(() => {
     return edges.map((edge) => {
@@ -180,27 +130,28 @@ function SchemaCanvasInner() {
       return {
         ...edge,
         hidden,
-        data: {
-          ...edge.data,
-          simplified: lodCollapsed,
-        },
         style: {
           ...edge.style,
           opacity,
         },
       }
     })
-  }, [edges, focusSets, lodCollapsed, showRelations])
+  }, [edges, focusSets, showRelations])
 
   const onNodeClick: NodeMouseHandler = useCallback(
     (_event, node) => {
+      setSelectedEdgeId(null)
       const data = node.data as DiagramNodeData
       if (data.kind === "entity") {
         setFocusedEntityId(node.id)
       }
     },
-    [setFocusedEntityId]
+    [setFocusedEntityId, setSelectedEdgeId]
   )
+
+  const onPaneClick = useCallback(() => {
+    setSelectedEdgeId(null)
+  }, [setSelectedEdgeId])
 
   const onNodeDragStop: OnNodeDrag = useCallback(
     (_event, node) => {
@@ -225,6 +176,7 @@ function SchemaCanvasInner() {
       nodesDraggable
       onNodesChange={onNodesChange}
       onNodeClick={onNodeClick}
+      onPaneClick={onPaneClick}
       onNodeDragStop={onNodeDragStop}
       onMove={(_event, viewport) => setZoom(viewport.zoom)}
       proOptions={{ hideAttribution: true }}

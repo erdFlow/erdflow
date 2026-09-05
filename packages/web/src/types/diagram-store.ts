@@ -21,6 +21,8 @@ export interface DiagramState {
   connectionStatus: ConnectionStatus
   searchQuery: string
   focusedEntityId: string | null
+  /** Pinned relationship edge highlight (same visuals as hover). */
+  selectedEdgeId: string | null
   showRelations: boolean
   showMinimap: boolean
   showSqlView: boolean
@@ -37,6 +39,7 @@ export interface DiagramState {
   setConnectionStatus: (status: ConnectionStatus) => void
   setSearchQuery: (query: string) => void
   setFocusedEntityId: (entityId: string | null) => void
+  setSelectedEdgeId: (edgeId: string | null) => void
   setShowRelations: (show: boolean) => void
   setShowMinimap: (show: boolean) => void
   setShowSqlView: (show: boolean) => void
