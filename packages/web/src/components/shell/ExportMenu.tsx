@@ -4,9 +4,16 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@workspace/ui/components/dropdown-menu"
-import { DownloadIcon, FileCode2Icon, ImageIcon } from "lucide-react"
+import {
+  DownloadIcon,
+  FileCode2Icon,
+  ImageIcon,
+  Loader2Icon,
+} from "lucide-react"
+import { useState } from "react"
 import {
   EXPORT_ARIA_LABEL,
+  EXPORT_EXPORTING_ARIA_LABEL,
   EXPORT_PNG_LABEL,
   EXPORT_SVG_LABEL,
 } from "../../data/labels.js"
@@ -71,17 +78,43 @@ export function ExportMenu() {
   const { resolvedTheme } = useTheme()
   const isDark = resolvedTheme === "dark"
   const backgroundColor = exportBackgroundColor(isDark)
+  const [isExporting, setIsExporting] = useState(false)
+
+  async function runExport(exportFn: () => Promise<void>): Promise<void> {
+    if (isExporting) {
+      return
+    }
+    setIsExporting(true)
+    try {
+      await exportFn()
+    } finally {
+      setIsExporting(false)
+    }
+  }
 
   return (
     <DropdownMenuTrigger>
-      <Button variant="ghost" size="icon-sm" aria-label={EXPORT_ARIA_LABEL}>
-        <DownloadIcon />
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        aria-label={
+          isExporting ? EXPORT_EXPORTING_ARIA_LABEL : EXPORT_ARIA_LABEL
+        }
+        aria-busy={isExporting}
+        isDisabled={isExporting}
+      >
+        {isExporting ? (
+          <Loader2Icon className="animate-spin" />
+        ) : (
+          <DownloadIcon />
+        )}
       </Button>
       <DropdownMenu placement="bottom end" className="min-w-36">
         <DropdownMenuItem
           textValue={EXPORT_PNG_LABEL}
+          isDisabled={isExporting}
           onAction={() => {
-            void exportDiagramAsPng(backgroundColor)
+            void runExport(() => exportDiagramAsPng(backgroundColor))
           }}
         >
           <ImageIcon />
@@ -89,8 +122,9 @@ export function ExportMenu() {
         </DropdownMenuItem>
         <DropdownMenuItem
           textValue={EXPORT_SVG_LABEL}
+          isDisabled={isExporting}
           onAction={() => {
-            void exportDiagramAsSvg(backgroundColor)
+            void runExport(() => exportDiagramAsSvg(backgroundColor))
           }}
         >
           <FileCode2Icon />

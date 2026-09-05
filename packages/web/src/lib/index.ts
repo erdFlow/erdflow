@@ -25,6 +25,7 @@ export {
   formatEnumUsage,
 } from "./enum-usages.js"
 export { getConnectedIds } from "./focus-utils.js"
+export { packFocusNeighborhood } from "./pack-focus-neighborhood.js"
 export { foreignKeyRefs } from "./foreign-key-refs.js"
 export { formatAdapterLabel } from "./format-adapter.js"
 export { formatRelationLabel } from "./format-relation.js"

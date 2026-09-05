@@ -16,9 +16,12 @@ import {
   FIT_VIEW_PADDING,
   FOCUS_EDGE_OPACITY,
   FOCUS_NODE_OPACITY,
+  FOCUS_NODE_ZOOM,
+  FOCUS_VIEW_DURATION_MS,
   MINIMAP_AUTO_HIDE_NODE_COUNT,
 } from "../../data/constants.js"
 import { getConnectedIds } from "../../lib/focus-utils.js"
+import { packFocusNeighborhood } from "../../lib/pack-focus-neighborhood.js"
 import { useDiagramStore } from "../../store/diagram-store.js"
 import type { DiagramNodeData } from "../../types/flow-types.js"
 import { useTheme } from "../theme-provider.js"
@@ -56,6 +59,7 @@ function CanvasControlsRegistrar() {
 }
 
 function SchemaCanvasInner() {
+  const { fitView, getZoom } = useReactFlow()
   const { resolvedTheme } = useTheme()
   const schema = useDiagramStore((state) => state.schema)
   const nodes = useDiagramStore((state) => state.nodes)
@@ -76,6 +80,7 @@ function SchemaCanvasInner() {
     showMinimap && nodes.length < MINIMAP_AUTO_HIDE_NODE_COUNT
 
   const normalizedQuery = searchQuery.trim().toLowerCase()
+  const searchActive = normalizedQuery.length > 0
 
   const focusSets = useMemo(() => {
     if (!schema || !focusedEntityId) {
@@ -84,46 +89,129 @@ function SchemaCanvasInner() {
     return getConnectedIds(schema, focusedEntityId)
   }, [focusedEntityId, schema])
 
+  const matchingNodeIds = useMemo(() => {
+    if (!searchActive) {
+      return null
+    }
+
+    const ids = new Set<string>()
+    for (const node of nodes) {
+      const nodeData = node.data as DiagramNodeData
+      const entityName =
+        nodeData.kind === "entity"
+          ? nodeData.entity.name
+          : nodeData.enumDef.name
+      if (entityName.toLowerCase().includes(normalizedQuery)) {
+        ids.add(node.id)
+      }
+    }
+    return ids
+  }, [nodes, normalizedQuery, searchActive])
+
+  /** Focused entity + related tables + enums used by them / matching search. */
+  const neighborhoodIds = useMemo(() => {
+    if (!focusSets) {
+      return null
+    }
+    const ids = new Set(focusSets.nodeIds)
+    if (!searchActive || !schema) {
+      return ids
+    }
+
+    const focusedNames = new Set(
+      schema.entities
+        .filter((entity) => focusSets.nodeIds.has(entity.id))
+        .map((entity) => entity.name)
+    )
+
+    for (const node of nodes) {
+      const data = node.data as DiagramNodeData
+      if (data.kind !== "enum") {
+        continue
+      }
+      if (matchingNodeIds?.has(node.id)) {
+        ids.add(node.id)
+        continue
+      }
+      if (data.usages.some((usage) => focusedNames.has(usage.table))) {
+        ids.add(node.id)
+      }
+    }
+    return ids
+  }, [focusSets, matchingNodeIds, nodes, schema, searchActive])
+
+  const packedPositions = useMemo(() => {
+    if (!(neighborhoodIds && searchActive && focusedEntityId)) {
+      return null
+    }
+    return packFocusNeighborhood(nodes, focusedEntityId, neighborhoodIds)
+  }, [focusedEntityId, neighborhoodIds, nodes, searchActive])
+
   const displayNodes = useMemo(() => {
     return nodes.map((node) => {
       let hidden = false
-      let opacity = 1
 
-      if (normalizedQuery) {
-        const nodeData = node.data as DiagramNodeData
-        const entityName =
-          nodeData.kind === "entity"
-            ? nodeData.entity.name
-            : nodeData.enumDef.name
-        hidden = !entityName.toLowerCase().includes(normalizedQuery)
+      if (neighborhoodIds && searchActive) {
+        // Search + focus: show focused table + related tables + enums.
+        hidden = !neighborhoodIds.has(node.id)
+      } else if (matchingNodeIds) {
+        // Search only: name matches.
+        hidden = !matchingNodeIds.has(node.id)
       }
 
-      if (focusSets && !hidden) {
+      let opacity = 1
+      if (focusSets && !searchActive && !hidden) {
+        // No search + focus: full graph with dimming (image 1).
         opacity = focusSets.nodeIds.has(node.id) ? 1 : FOCUS_NODE_OPACITY
       }
 
+      const packed = packedPositions?.get(node.id)
+      const position = packed ?? node.position
+      const positionChanged =
+        position.x !== node.position.x || position.y !== node.position.y
+
       const currentOpacity = node.style?.opacity ?? 1
-      if (node.hidden === hidden && currentOpacity === opacity) {
+      if (
+        node.hidden === hidden &&
+        currentOpacity === opacity &&
+        !positionChanged
+      ) {
         return node
       }
 
       return {
         ...node,
         hidden,
+        position,
         style: {
           ...node.style,
           opacity,
         },
       }
     })
-  }, [focusSets, nodes, normalizedQuery])
+  }, [
+    focusSets,
+    matchingNodeIds,
+    neighborhoodIds,
+    nodes,
+    packedPositions,
+    searchActive,
+  ])
 
   const displayEdges = useMemo(() => {
     return edges.map((edge) => {
-      const hidden = !showRelations
-      let opacity = 1
+      let hidden = !showRelations
 
-      if (focusSets && showRelations) {
+      if (!hidden && focusSets && searchActive && neighborhoodIds) {
+        hidden = !focusSets.edgeIds.has(edge.id)
+      } else if (!hidden && matchingNodeIds) {
+        hidden =
+          !matchingNodeIds.has(edge.source) ||
+          !matchingNodeIds.has(edge.target)
+      }
+
+      let opacity = 1
+      if (!hidden && focusSets && !searchActive && showRelations) {
         opacity = focusSets.edgeIds.has(edge.id) ? 1 : FOCUS_EDGE_OPACITY
       }
 
@@ -136,7 +224,67 @@ function SchemaCanvasInner() {
         },
       }
     })
-  }, [edges, focusSets, showRelations])
+  }, [
+    edges,
+    focusSets,
+    matchingNodeIds,
+    neighborhoodIds,
+    searchActive,
+    showRelations,
+  ])
+
+  // Zoom canvas to filtered matches when searching without focus.
+  useEffect(() => {
+    if (!searchActive || focusedEntityId) {
+      return
+    }
+
+    const currentNodes = useDiagramStore.getState().nodes
+    const targets = currentNodes.filter((node) => {
+      const nodeData = node.data as DiagramNodeData
+      const name =
+        nodeData.kind === "entity"
+          ? nodeData.entity.name
+          : nodeData.enumDef.name
+      return name.toLowerCase().includes(normalizedQuery)
+    })
+    if (targets.length === 0) {
+      return
+    }
+
+    const frame = requestAnimationFrame(() => {
+      void fitView({
+        nodes: targets.map((node) => ({ id: node.id })),
+        padding: FIT_VIEW_PADDING,
+        duration: 200,
+      }).then(() => {
+        setZoom(getZoom())
+      })
+    })
+
+    return () => cancelAnimationFrame(frame)
+  }, [fitView, focusedEntityId, getZoom, normalizedQuery, searchActive, setZoom])
+
+  // Frame focused table + all related nodes (~70% max zoom).
+  useEffect(() => {
+    if (!focusedEntityId || !neighborhoodIds) {
+      return
+    }
+
+    const targetIds = [...neighborhoodIds]
+    const frame = requestAnimationFrame(() => {
+      void fitView({
+        nodes: targetIds.map((id) => ({ id })),
+        padding: FIT_VIEW_PADDING,
+        maxZoom: FOCUS_NODE_ZOOM,
+        duration: FOCUS_VIEW_DURATION_MS,
+      }).then(() => {
+        setZoom(getZoom())
+      })
+    })
+
+    return () => cancelAnimationFrame(frame)
+  }, [fitView, focusedEntityId, getZoom, neighborhoodIds, setZoom])
 
   const onNodeClick: NodeMouseHandler = useCallback(
     (_event, node) => {

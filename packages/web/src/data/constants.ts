@@ -13,6 +13,12 @@ export const CANVAS_MIN_ZOOM = 0.2
 export const MINIMAP_AUTO_HIDE_NODE_COUNT = 1500
 export const FOCUS_NODE_OPACITY = 0.25
 export const FOCUS_EDGE_OPACITY = 0.2
+/** Viewport zoom when focusing a table from the sidebar or canvas. */
+export const FOCUS_NODE_ZOOM = 0.7
+/** Smooth pan/zoom duration when focusing a table (ms). */
+export const FOCUS_VIEW_DURATION_MS = 400
+/** Gap between tables in the temporary search+focus pack (ELK-like). */
+export const FOCUS_PACK_GAP = 80
 export const CANVAS_MIN_HEIGHT_CLASS = "min-h-[480px]"
 
 export const FALLBACK_NODE_WIDTH = 220

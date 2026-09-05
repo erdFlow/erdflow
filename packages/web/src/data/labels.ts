@@ -76,6 +76,7 @@ export const THEME_DARK_LABEL = "Dark"
 export const THEME_SYSTEM_LABEL = "System"
 
 export const EXPORT_ARIA_LABEL = "Export"
+export const EXPORT_EXPORTING_ARIA_LABEL = "Exporting diagram"
 export const EXPORT_PNG_LABEL = "PNG"
 export const EXPORT_SVG_LABEL = "SVG"
 

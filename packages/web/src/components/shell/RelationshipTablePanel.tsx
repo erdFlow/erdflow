@@ -93,16 +93,28 @@ function RelationMappingRow({
 export function RelationshipTablePanel() {
   const schema = useDiagramStore((state) => state.schema)
   const focusedEntityId = useDiagramStore((state) => state.focusedEntityId)
+  const searchQuery = useDiagramStore((state) => state.searchQuery)
   const setShowRelationshipTable = useDiagramStore(
     (state) => state.setShowRelationshipTable
   )
+
+  const normalizedQuery = searchQuery.trim().toLowerCase()
 
   const entity = useMemo(() => {
     if (!schema || !focusedEntityId) {
       return null
     }
-    return schema.entities.find((entry) => entry.id === focusedEntityId) ?? null
-  }, [focusedEntityId, schema])
+    const found =
+      schema.entities.find((entry) => entry.id === focusedEntityId) ?? null
+    if (
+      found &&
+      normalizedQuery &&
+      !found.name.toLowerCase().includes(normalizedQuery)
+    ) {
+      return null
+    }
+    return found
+  }, [focusedEntityId, normalizedQuery, schema])
 
   const rows = useMemo(() => {
     if (!schema || !focusedEntityId) {
