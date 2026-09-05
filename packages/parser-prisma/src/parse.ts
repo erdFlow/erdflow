@@ -303,11 +303,32 @@ function mapForeignKeyConstraints(
   return constraints
 }
 
+/**
+ * Prisma v7 moves `url` to prisma.config.ts; schemas may omit it.
+ * `@prisma/internals` v6 still requires `url` for getDMMF — inject a stub.
+ */
+export function normalizeDatamodelForDmmf(datamodel: string): string {
+  return datamodel.replace(
+    /datasource\s+(\w+)\s*\{([^}]*)\}/g,
+    (full, name: string, body: string) => {
+      if (/\burl\s*=/.test(body)) {
+        return full
+      }
+      const trimmed = body.replace(/\s*$/, "")
+      const sep = trimmed.endsWith("\n") ? "" : "\n"
+      return `datasource ${name} {${trimmed}${sep}  url = env("DATABASE_URL")\n}`
+    }
+  )
+}
+
 export async function parsePrismaSchema(
   input: string,
   meta?: SchemaMeta
 ): Promise<UniversalSchema> {
-  const dmmf = (await getDMMF({ datamodel: input })) as unknown as DmmfDocument
+  const datamodel = normalizeDatamodelForDmmf(input)
+  const dmmf = (await getDMMF({
+    datamodel,
+  })) as unknown as DmmfDocument
 
   const entities: Entity[] = []
   const indexes: Index[] = []

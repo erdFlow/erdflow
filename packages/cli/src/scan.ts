@@ -5,7 +5,9 @@ import { dbmlAdapter, findFilesByExtension } from "@erdflow/parser-dbml"
 import {
   detectPrismaProject,
   prismaAdapter,
-  resolvePrismaSchemaPath,
+  resolvePrismaSchemaLocation,
+  resolvePrismaSchemaLocationFromPath,
+  type PrismaSchemaLocation,
 } from "@erdflow/parser-prisma"
 import { findSqlFiles, inferSqlDialect, sqlAdapter } from "@erdflow/parser-sql"
 
@@ -21,6 +23,8 @@ export interface ResolvedSource {
   adapterName: AdapterName
   filePath: string
   watchPaths: string[]
+  /** Absolute `.prisma` paths to concatenate when loading (Prisma multi-file). */
+  schemaFiles?: string[]
   dialect?: "postgresql" | "mysql" | "sqlite"
 }
 
@@ -37,21 +41,34 @@ function resolvePath(rootDir: string, inputPath: string): string {
   return isAbsolute(inputPath) ? inputPath : resolve(rootDir, inputPath)
 }
 
-async function resolveExplicitPrisma(
-  rootDir: string,
-  prismaPath: string
-): Promise<ResolvedSource> {
-  const filePath = resolvePath(rootDir, prismaPath)
-  if (!(await fileExists(filePath))) {
-    throw new Error(`Prisma schema file not found: ${filePath}`)
+function sourceFromPrismaLocation(
+  location: PrismaSchemaLocation
+): ResolvedSource {
+  const watchPaths = [...location.files]
+  if (location.configPath) {
+    watchPaths.push(location.configPath)
   }
 
   return {
     adapter: prismaAdapter,
     adapterName: "prisma",
-    filePath,
-    watchPaths: [filePath],
+    filePath: location.rootPath,
+    schemaFiles: location.files,
+    watchPaths,
   }
+}
+
+async function resolveExplicitPrisma(
+  rootDir: string,
+  prismaPath: string
+): Promise<ResolvedSource> {
+  const location = await resolvePrismaSchemaLocationFromPath(rootDir, prismaPath)
+  if (!location) {
+    const filePath = resolvePath(rootDir, prismaPath)
+    throw new Error(`Prisma schema file not found: ${filePath}`)
+  }
+
+  return sourceFromPrismaLocation(location)
 }
 
 async function resolveExplicitDbml(
@@ -78,17 +95,12 @@ async function autoDetectPrisma(
     return null
   }
 
-  const filePath = await resolvePrismaSchemaPath(rootDir)
-  if (!filePath) {
+  const location = await resolvePrismaSchemaLocation(rootDir)
+  if (!location) {
     return null
   }
 
-  return {
-    adapter: prismaAdapter,
-    adapterName: "prisma",
-    filePath,
-    watchPaths: [filePath],
-  }
+  return sourceFromPrismaLocation(location)
 }
 
 async function autoDetectDbml(rootDir: string): Promise<ResolvedSource | null> {
