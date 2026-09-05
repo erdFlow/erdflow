@@ -12,7 +12,12 @@ export {
   formatEntityRelationRow,
   getEntityRelationRows,
 } from "./entity-relations.js"
-export { entityToSql } from "./entity-to-sql.js"
+export {
+  entityToSql,
+  schemaToSql,
+  suggestedSqlFilename,
+} from "./entity-to-sql.js"
+export { saveTextFile } from "./save-text-file.js"
 export {
   type EnumUsage,
   enumUsages,

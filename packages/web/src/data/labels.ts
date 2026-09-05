@@ -75,6 +75,11 @@ export const THEME_LIGHT_LABEL = "Light"
 export const THEME_DARK_LABEL = "Dark"
 export const THEME_SYSTEM_LABEL = "System"
 
+export const EXPORT_ARIA_LABEL = "Export"
+export const EXPORT_PNG_LABEL = "PNG"
+export const EXPORT_SVG_LABEL = "SVG"
+export const EXPORT_SQL_LABEL = "SQL"
+
 export const ERROR_BOUNDARY_TITLE = "Something went wrong"
 export const ERROR_BOUNDARY_DESCRIPTION =
   "The visualizer hit an unexpected error. Try again, or reload the page."

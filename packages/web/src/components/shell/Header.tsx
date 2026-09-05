@@ -42,6 +42,7 @@ import {
 import { useDiagramStore } from "../../store/diagram-store.js"
 import { useTheme } from "../theme-provider.js"
 import { SourceSelector } from "./SourceSelector.js"
+import { ExportMenu } from "./ExportMenu.js"
 
 function ViewToggleItem({
   label,
@@ -120,6 +121,7 @@ export function Header() {
 
       <div className="flex shrink-0 items-center gap-2">
         <SourceSelector />
+        <ExportMenu />
         <DropdownMenuTrigger>
           <Button variant="ghost" size="icon-sm" aria-label="Actions">
             <MoreVerticalIcon />

@@ -287,20 +287,19 @@ function enumsUsedByEntity(
   return schema.enums.filter((enumDef) => used.has(enumDef.name))
 }
 
-/** Emit PostgreSQL-style DDL for a single entity (enums, table, indexes). */
-export function entityToSql(
+function formatEnumCreate(enumDef: { name: string; values: string[] }): string {
+  const values = enumDef.values
+    .map((value) => `'${value.replaceAll("'", "''")}'`)
+    .join(", ")
+  return `CREATE TYPE ${quoteIdent(enumDef.name)} AS ENUM (${values});`
+}
+
+function createTableStatement(
+  entity: Entity,
   schema: UniversalSchema,
-  entityId: string
-): string | null {
-  const entity = schema.entities.find((entry) => entry.id === entityId)
-  if (!entity) {
-    return null
-  }
-
-  const entityById = new Map(schema.entities.map((entry) => [entry.id, entry]))
-  const enumNames = new Set(schema.enums.map((entry) => entry.name))
-  const usedEnums = enumsUsedByEntity(entity, schema)
-
+  entityById: Map<string, Entity>,
+  enumNames: Set<string>
+): string {
   const pkConstraint = schema.constraints.find(
     (constraint) =>
       constraint.kind === "primary_key" && constraint.entityId === entity.id
@@ -309,15 +308,6 @@ export function entityToSql(
   const singlePk =
     pkFieldIds.size === 1 ||
     entity.fields.filter((field) => field.isPrimaryKey).length === 1
-
-  const blocks: string[] = []
-
-  for (const enumDef of usedEnums) {
-    const values = enumDef.values
-      .map((value) => `'${value.replaceAll("'", "''")}'`)
-      .join(", ")
-    blocks.push(`CREATE TYPE ${quoteIdent(enumDef.name)} AS ENUM (${values});`)
-  }
 
   const columnLines = entity.fields.map((field) => {
     const isPk = field.isPrimaryKey || pkFieldIds.has(field.id)
@@ -335,7 +325,25 @@ export function entityToSql(
   ].map((line) => `  ${line}`)
 
   const body = [...columnLines, ...constraintLines].join(",\n")
-  blocks.push(`CREATE TABLE ${quoteIdent(entity.name)} (\n${body}\n);`)
+  return `CREATE TABLE ${quoteIdent(entity.name)} (\n${body}\n);`
+}
+
+/** Emit PostgreSQL-style DDL for a single entity (enums, table, indexes). */
+export function entityToSql(
+  schema: UniversalSchema,
+  entityId: string
+): string | null {
+  const entity = schema.entities.find((entry) => entry.id === entityId)
+  if (!entity) {
+    return null
+  }
+
+  const entityById = new Map(schema.entities.map((entry) => [entry.id, entry]))
+  const enumNames = new Set(schema.enums.map((entry) => entry.name))
+  const usedEnums = enumsUsedByEntity(entity, schema)
+
+  const blocks: string[] = usedEnums.map(formatEnumCreate)
+  blocks.push(createTableStatement(entity, schema, entityById, enumNames))
 
   const indexes = indexStatements(entity, schema.indexes)
   if (indexes.length > 0) {
@@ -343,4 +351,43 @@ export function entityToSql(
   }
 
   return blocks.join("\n\n")
+}
+
+/**
+ * Emit PostgreSQL-style DDL for the full schema (all enums, tables, indexes).
+ */
+export function schemaToSql(schema: UniversalSchema): string {
+  const entityById = new Map(schema.entities.map((entry) => [entry.id, entry]))
+  const enumNames = new Set(schema.enums.map((entry) => entry.name))
+  const blocks: string[] = []
+
+  for (const enumDef of schema.enums) {
+    blocks.push(formatEnumCreate(enumDef))
+  }
+
+  for (const entity of schema.entities) {
+    blocks.push(createTableStatement(entity, schema, entityById, enumNames))
+    const indexes = indexStatements(entity, schema.indexes)
+    if (indexes.length > 0) {
+      blocks.push(indexes.join("\n"))
+    }
+  }
+
+  return blocks.join("\n\n")
+}
+
+/** Suggested download name from schema meta source, else `schema.sql`. */
+export function suggestedSqlFilename(schema: UniversalSchema): string {
+  const source = schema.meta?.source
+  if (source) {
+    const base = source
+      .split(/[/\\]/)
+      .pop()
+      ?.replace(/\.[^.]+$/, "")
+      ?.trim()
+    if (base) {
+      return `${base}.sql`
+    }
+  }
+  return "schema.sql"
 }
