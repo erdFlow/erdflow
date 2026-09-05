@@ -2,13 +2,14 @@ import {
   Background,
   Controls,
   MiniMap,
+  type NodeChange,
   type NodeMouseHandler,
   type OnNodeDrag,
   ReactFlow,
   ReactFlowProvider,
   useReactFlow,
 } from "@xyflow/react"
-import { useCallback, useEffect, useMemo } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import "@xyflow/react/dist/style.css"
 import {
   CANVAS_MIN_HEIGHT_CLASS,
@@ -140,12 +141,33 @@ function SchemaCanvasInner() {
     return ids
   }, [focusSets, matchingNodeIds, nodes, schema, searchActive])
 
-  const packedPositions = useMemo(() => {
-    if (!(neighborhoodIds && searchActive && focusedEntityId)) {
-      return null
+  const packSessionKey =
+    searchActive && focusedEntityId && neighborhoodIds
+      ? `${focusedEntityId}:${[...neighborhoodIds].sort().join(",")}`
+      : null
+
+  // Snapshot pack once per focus/search session so drags aren't overwritten.
+  const [packOverlay, setPackOverlay] = useState<Map<
+    string,
+    { x: number; y: number }
+  > | null>(null)
+
+  useEffect(() => {
+    if (!packSessionKey) {
+      setPackOverlay(null)
+      return
     }
-    return packFocusNeighborhood(nodes, focusedEntityId, neighborhoodIds)
-  }, [focusedEntityId, neighborhoodIds, nodes, searchActive])
+    const separator = packSessionKey.indexOf(":")
+    const focusId = packSessionKey.slice(0, separator)
+    const relatedIds = new Set(
+      packSessionKey
+        .slice(separator + 1)
+        .split(",")
+        .filter(Boolean)
+    )
+    const currentNodes = useDiagramStore.getState().nodes
+    setPackOverlay(packFocusNeighborhood(currentNodes, focusId, relatedIds))
+  }, [packSessionKey])
 
   const displayNodes = useMemo(() => {
     return nodes.map((node) => {
@@ -165,7 +187,7 @@ function SchemaCanvasInner() {
         opacity = focusSets.nodeIds.has(node.id) ? 1 : FOCUS_NODE_OPACITY
       }
 
-      const packed = packedPositions?.get(node.id)
+      const packed = packOverlay?.get(node.id)
       const position = packed ?? node.position
       const positionChanged =
         position.x !== node.position.x || position.y !== node.position.y
@@ -194,7 +216,7 @@ function SchemaCanvasInner() {
     matchingNodeIds,
     neighborhoodIds,
     nodes,
-    packedPositions,
+    packOverlay,
     searchActive,
   ])
 
@@ -301,11 +323,58 @@ function SchemaCanvasInner() {
     setSelectedEdgeId(null)
   }, [setSelectedEdgeId])
 
+  // During pack overlay, keep drag in the overlay so the packer doesn't snap
+  // nodes back — and so we don't overwrite the global ELK layout.
+  const handleNodesChange = useCallback(
+    (changes: NodeChange[]) => {
+      if (!packOverlay) {
+        onNodesChange(changes)
+        return
+      }
+
+      const positionChanges = changes.filter(
+        (change): change is NodeChange & { type: "position" } =>
+          change.type === "position"
+      )
+      if (positionChanges.length > 0) {
+        setPackOverlay((prev) => {
+          if (!prev) {
+            return prev
+          }
+          const next = new Map(prev)
+          for (const change of positionChanges) {
+            if (change.position) {
+              next.set(change.id, change.position)
+            }
+          }
+          return next
+        })
+      }
+
+      const rest = changes.filter((change) => change.type !== "position")
+      if (rest.length > 0) {
+        onNodesChange(rest)
+      }
+    },
+    [onNodesChange, packOverlay]
+  )
+
   const onNodeDragStop: OnNodeDrag = useCallback(
     (_event, node) => {
+      if (packOverlay) {
+        setPackOverlay((prev) => {
+          if (!prev) {
+            return prev
+          }
+          const next = new Map(prev)
+          next.set(node.id, { ...node.position })
+          return next
+        })
+        return
+      }
       setManualPosition(node.id, node.position)
     },
-    [setManualPosition]
+    [packOverlay, setManualPosition]
   )
 
   return (
@@ -322,7 +391,7 @@ function SchemaCanvasInner() {
       panOnScroll
       zoomOnScroll
       nodesDraggable
-      onNodesChange={onNodesChange}
+      onNodesChange={handleNodesChange}
       onNodeClick={onNodeClick}
       onPaneClick={onPaneClick}
       onNodeDragStop={onNodeDragStop}
