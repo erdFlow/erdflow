@@ -121,26 +121,42 @@ Open **http://127.0.0.1:4317** (CLI opens the browser by default; omit `--no-ope
 Run without the browser when changing parsing logic:
 
 ```bash
-# All CLI tests (scan, parse, server, large schema)
-pnpm --filter @erdflow/cli test
+# Core schema factory + validation
+pnpm --filter @erdflow/core test
 
-# Prisma parser only
+# All CLI tests (scan, parse, server, watch, large schema)
+pnpm --filter erdflow test
+
+# Prisma parser only (includes error + size ladder benches)
 pnpm --filter @erdflow/parser-prisma test
 
 # DBML parser only
 pnpm --filter @erdflow/parser-dbml test
 
-# Layout engine
+# Layout engine (includes S/M/L/XL performance + memory)
 pnpm --filter @erdflow/layout test
 
 # Visualizer types
 pnpm --filter @erdflow/web typecheck
 ```
 
+### Size ladder (Wave 1)
+
+Shared fixtures from `@erdflow/core/testing` (`createSizedSchema`) drive layout and parser timing checks:
+
+| Size | Models | Layout budget | Prisma parse budget |
+| --- | --- | --- | --- |
+| S | 5 | &lt; 500ms | &lt; 2s |
+| M | 25 | &lt; 2s | &lt; 5s |
+| L | 100 | &lt; 15s | &lt; 15s |
+| XL | 200 | &lt; 30s (+ heap soft ceiling) | &lt; 30s |
+
+Browser e2e (initial paint, drag, zoom FPS) is deferred to a later wave.
+
 After parser changes, rebuild the CLI before manual UI testing:
 
 ```bash
-pnpm --filter @erdflow/cli build
+pnpm --filter erdflow build
 ```
 
 ---

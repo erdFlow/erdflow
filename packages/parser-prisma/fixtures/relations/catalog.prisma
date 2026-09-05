@@ -1,0 +1,61 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             Int       @id @default(autoincrement())
+  email          String    @unique
+  profile        Profile?
+  authoredPosts  Post[]    @relation("PostAuthor")
+  editedPosts    Post[]    @relation("PostEditor")
+  optionalPosts  Post[]    @relation("PostOptionalAuthor")
+}
+
+model Profile {
+  id     Int     @id @default(autoincrement())
+  bio    String?
+  userId Int     @unique
+  user   User    @relation(fields: [userId], references: [id])
+}
+
+model Post {
+  id               Int            @id @default(autoincrement())
+  title            String
+  authorId         Int
+  editorId         Int?
+  optionalAuthorId Int?
+  author           User           @relation("PostAuthor", fields: [authorId], references: [id])
+  editor           User?          @relation("PostEditor", fields: [editorId], references: [id])
+  optionalAuthor   User?          @relation("PostOptionalAuthor", fields: [optionalAuthorId], references: [id])
+  categories       PostCategory[]
+  tags             Tag[]
+}
+
+model Category {
+  id       Int            @id @default(autoincrement())
+  name     String
+  parentId Int?
+  parent   Category?      @relation("CategoryTree", fields: [parentId], references: [id])
+  children Category[]     @relation("CategoryTree")
+  posts    PostCategory[]
+}
+
+model PostCategory {
+  postId     Int
+  categoryId Int
+  post       Post     @relation(fields: [postId], references: [id])
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  @@id([postId, categoryId])
+}
+
+model Tag {
+  id    Int    @id @default(autoincrement())
+  name  String
+  posts Post[]
+}
