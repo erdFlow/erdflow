@@ -413,6 +413,6 @@ export default function Page() {
 
 ## Related docs
 
-- [Local development](./local-development.md) — run CLI + Vite before testing a publish candidate
+- [Prisma development](./development/prisma/README.md) — run parser tests and CLI against Prisma before publishing
 - [npm publish docs](https://docs.npmjs.com/creating-and-publishing-scoped-public-packages)
 - [pnpm publish](https://pnpm.io/cli/publish)

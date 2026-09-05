@@ -88,7 +88,7 @@ pnpm typecheck
 pnpm build
 ```
 
-**Full guide:** [docs/local-development.md](./docs/local-development.md) — local parsing, two-terminal UI dev, fixtures, and troubleshooting.
+**Prisma docs:** [docs/development/prisma/README.md](./docs/development/prisma/README.md) — local UI, tests, fixtures, v6/v7 layouts.
 
 ### Visualizer dev (two terminals)
 
@@ -107,7 +107,7 @@ node packages/cli/dist/cli.js --no-open --prisma packages/parser-prisma/fixtures
 pnpm --filter web dev
 ```
 
-Open **http://localhost:5173**. See [docs/local-development.md](./docs/local-development.md) for DBML/SQL fixtures, your own Prisma path, and troubleshooting.
+Open **http://localhost:5173**. Prisma local runbook: [docs/development/prisma/local-development.md](./docs/development/prisma/local-development.md). Full doc map: [docs/development/prisma/README.md](./docs/development/prisma/README.md).
 
 Build the CLI and visualizer bundle for production-style serving:
 
