@@ -9,7 +9,7 @@ Local-first schema ERDs, published **by domain**.
 
 Shared libraries (`@erdflow/core`, layout, web, parsers) stay **private** in this monorepo — users install the domain CLI, not a universal schema library.
 
-See [brd.md](./brd.md) for product requirements. Publishing: [docs/npm-publishing.md](./docs/npm-publishing.md).
+Publishing: [docs/deployment/deployment.md](./docs/deployment/deployment.md).
 
 ## Preview (@erdflow/prisma)
 
@@ -81,7 +81,7 @@ pnpm --filter @erdflow/web typecheck
 apps/
   web/          # Dev UI shell (Vite + shadcn)
   docs/         # Documentation
-docs/           # Developer guides + npm publishing
+docs/           # Developer guides + deployment
 packages/
   core/         # Universal Schema (private)
   prisma/       # Published as @erdflow/prisma
@@ -89,7 +89,6 @@ packages/
   layout/       # ELK.js layout (private)
   ui/           # Shared shadcn components
   parser-*/     # Schema adapters (private)
-phases/         # BRD phase plans
 ```
 
 ## Adding shadcn components

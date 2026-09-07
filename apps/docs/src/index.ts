@@ -1,2 +1,2 @@
-/** Product documentation site — see brd.md for requirements. */
+/** Product documentation site. */
 export {}

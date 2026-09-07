@@ -1,19 +1,20 @@
-# Publishing erdFlow domain packages to npm
+# Deploying erdFlow domain packages to npm
 
 Ship **one npm package per domain**. Do not publish a universal “does everything” CLI or expose `@erdflow/core` to end users.
 
 | Publish | Do not publish (monorepo private) |
 | --- | --- |
-| `@erdflow/prisma` | `@erdflow/core`, `@erdflow/layout`, `@erdflow/web`, `parser-*` |
-| `@erdflow/laravel` (later) | Same internals |
+| `@erdflow/<Domain>` | `@erdflow/core`, `@erdflow/layout`, `@erdflow/web`, `parser-*` |
 
 Users run:
 
 ```bash
-npx @erdflow/prisma
+npx @erdflow/<Domain>
 ```
 
 Agents read `AGENTS.md` / `llms.txt` inside that package after install — not a universal erdflow guide.
+
+Replace `<Domain>` with the domain id (lowercase folder/npm segment), e.g. the package path `packages/<Domain>/` and name `@erdflow/<Domain>`.
 
 ---
 
@@ -22,29 +23,29 @@ Agents read `AGENTS.md` / `llms.txt` inside that package after install — not a
 Each published domain owns its own agent docs. Folder name = domain = npm scope.
 
 ```text
-packages/<domain>/     →  @erdflow/<domain>
+packages/<Domain>/     →  @erdflow/<Domain>
   README.md
   AGENTS.md
   llms.txt
   media/
-  bin: erdflow-<domain>
+  bin: erdflow-<Domain>
 ```
 
-When adding `@erdflow/laravel` (or any domain), **copy this checklist** — do **not** append Laravel sections to Prisma’s `AGENTS.md`:
+When adding a new domain, **copy this checklist** — do **not** append that domain’s sections into another domain’s `AGENTS.md`:
 
-1. Create `packages/<domain>/` with bin `erdflow-<domain>`
+1. Create `packages/<Domain>/` with bin `erdflow-<Domain>`
 2. Own `README.md`, `AGENTS.md`, `llms.txt`, `media/`
 3. Wire that domain’s parser; reuse private `core` / `layout` / `web` via the domain bundle
-4. Set `repository.directory` to `packages/<domain>`
-5. Publish `@erdflow/<domain>` with `--access public`
+4. Set `repository.directory` to `packages/<Domain>`
+5. Publish `@erdflow/<Domain>` with `--access public`
 
 Shared internals stay private until two published packages need `@erdflow/core` on npm (two-adapters rule).
 
-**Deep module rule:** the interface of `@erdflow/prisma` is “run Prisma ERD.” Laravel is a second adapter package with the same *shape*, not extra sections inside Prisma’s docs.
+**Deep module rule:** the interface of `@erdflow/<Domain>` is “run ERD for that domain.” Each new domain is a second adapter package with the same *shape*, not extra sections inside another domain’s docs.
 
 ---
 
-## Publish `@erdflow/prisma`
+## Publish `@erdflow/<Domain>`
 
 ### 1. Login
 
@@ -56,16 +57,16 @@ npm login   # if needed
 
 ### 2. Package identity
 
-Configured in [`packages/prisma/package.json`](../packages/prisma/package.json):
+Configured in `packages/<Domain>/package.json`:
 
 | Field | Value |
 | --- | --- |
-| Path | `packages/prisma/` |
-| `name` | `@erdflow/prisma` |
-| `bin` | `erdflow-prisma` → `./dist/cli.js` |
+| Path | `packages/<Domain>/` |
+| `name` | `@erdflow/<Domain>` |
+| `bin` | `erdflow-<Domain>` → `./dist/cli.js` |
 | `publishConfig.access` | `public` |
 | `files` | `dist/cli.js`, `dist/public`, `media`, `README.md`, `AGENTS.md`, `llms.txt` |
-| `repository.directory` | `packages/prisma` |
+| `repository.directory` | `packages/<Domain>` |
 
 Shared workspace packages stay `private` / unpublished. tsup bundles them into `dist/cli.js`.
 
@@ -75,20 +76,20 @@ Shared workspace packages stay `private` / unpublished. tsup bundles them into `
 cd erdFlow
 pnpm install
 pnpm --filter @erdflow/core build
-pnpm --filter @erdflow/prisma build
+pnpm --filter @erdflow/<Domain> build
 ```
 
-Smoke test:
+Smoke test (adjust schema path for the domain):
 
 ```bash
-node packages/prisma/dist/cli.js --no-open --prisma packages/parser-prisma/fixtures/basic.prisma
+node packages/<Domain>/dist/cli.js --no-open
 # → http://127.0.0.1:4317/
 ```
 
 ### 4. Dry-run
 
 ```bash
-cd packages/prisma
+cd packages/<Domain>
 npm pack --dry-run
 ```
 
@@ -97,7 +98,7 @@ Confirm the tarball includes README, AGENTS.md, llms.txt, media, and dist — no
 ### 5. Publish
 
 ```bash
-cd packages/prisma
+cd packages/<Domain>
 npm publish --access public
 ```
 
@@ -106,19 +107,19 @@ Bump `version` in `package.json` for later releases (`0.1.1`, …).
 ### 6. Verify
 
 ```bash
-npx @erdflow/prisma --help
-npm view @erdflow/prisma
+npx @erdflow/<Domain> --help
+npm view @erdflow/<Domain>
 ```
 
 ---
 
 ## Checklist before publish
 
-- [ ] Package folder is `packages/<domain>/` (matches npm name)
-- [ ] Package name is domain-scoped (`@erdflow/prisma`, not unscoped `erdflow`)
+- [ ] Package folder is `packages/<Domain>/` (matches npm name)
+- [ ] Package name is domain-scoped (`@erdflow/<Domain>`, not unscoped `erdflow`)
 - [ ] Description and keywords are domain-only
 - [ ] Own `README.md` / `AGENTS.md` / `llms.txt` / `media/` (not shared with other domains)
-- [ ] Agent docs use `npx @erdflow/<domain>`
-- [ ] `pnpm --filter @erdflow/<domain> build` succeeds
+- [ ] Agent docs use `npx @erdflow/<Domain>`
+- [ ] `pnpm --filter @erdflow/<Domain> build` succeeds
 - [ ] `npm pack --dry-run` looks clean
 - [ ] `@erdflow/core` (and other internals) remain unpublished

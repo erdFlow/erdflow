@@ -16,7 +16,6 @@ dist-ssr
 .agents
 .cursor
 phases
-brd.md
 
 # env files (can opt-in for committing if needed)
 .env*
