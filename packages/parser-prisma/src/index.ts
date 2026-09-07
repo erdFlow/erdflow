@@ -10,4 +10,8 @@ export {
   resolvePrismaSchemaPath,
 } from "./detect.js"
 export { loadPrismaDatamodel, parsePrismaSchemaFromLocation } from "./load.js"
-export { normalizeDatamodelForDmmf, parsePrismaSchema } from "./parse.js"
+export {
+  extractDatasourceProvider,
+  normalizeDatamodelForDmmf,
+  parsePrismaSchema,
+} from "./parse.js"

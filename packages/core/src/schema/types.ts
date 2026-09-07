@@ -21,6 +21,32 @@ export type ReferentialAction =
 
 export type SqlDialect = "postgresql" | "mysql" | "sqlite"
 
+/** Prisma / adapter datasource provider (ORM surface, not a live connection). */
+export type DatabaseProvider =
+  | "postgresql"
+  | "mysql"
+  | "sqlite"
+  | "sqlserver"
+  | "cockroachdb"
+  | "mongodb"
+  | "unknown"
+
+/** Relational (SQL View) vs document (Document View) chrome. */
+export type DatabaseKind = "relational" | "document"
+
+/**
+ * How a primary / identity field gets its value.
+ * App-level generators (cuid, nanoid) are not DB defaults.
+ */
+export type IdStrategy =
+  | "autoincrement"
+  | "uuid"
+  | "cuid"
+  | "nanoid"
+  | "objectId"
+  | "auto"
+  | "none"
+
 export interface FieldType {
   name: string
   native?: string
@@ -35,6 +61,8 @@ export interface Field {
   default?: string
   isPrimaryKey?: boolean
   isUnique?: boolean
+  /** Structured ID generator when known (parsers set; consumers optional). */
+  idStrategy?: IdStrategy
   comment?: string
 }
 
@@ -105,6 +133,10 @@ export interface SchemaMeta {
   version?: string
   /** Available versions for filtering; when length > 1 the UI shows a dropdown. */
   versions?: string[]
+  /** Datasource provider (e.g. Prisma `provider = "mongodb"`). */
+  provider?: DatabaseProvider
+  /** Derived view family: relational → SQL View, document → Document View. */
+  databaseKind?: DatabaseKind
 }
 
 export interface UniversalSchema {

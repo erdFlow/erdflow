@@ -33,12 +33,15 @@ import {
   SHOW_MINIMAP_LABEL,
   SHOW_RELATIONSHIP_TABLE_LABEL,
   SHOW_RELATIONSHIPS_LABEL,
-  SHOW_SQL_VIEW_LABEL,
   THEME_DARK_LABEL,
   THEME_LABEL,
   THEME_LIGHT_LABEL,
   THEME_SYSTEM_LABEL,
 } from "../../data/labels.js"
+import {
+  schemaDatabaseKind,
+  schemaViewLabels,
+} from "../../lib/schema-view-labels.js"
 import { useDiagramStore } from "../../store/diagram-store.js"
 import { useTheme } from "../theme-provider.js"
 import { ExportMenu } from "./ExportMenu.js"
@@ -90,6 +93,7 @@ function ThemeOption({
 }
 
 export function Header() {
+  const schema = useDiagramStore((state) => state.schema)
   const focusedEntityId = useDiagramStore((state) => state.focusedEntityId)
   const showRelations = useDiagramStore((state) => state.showRelations)
   const showMinimap = useDiagramStore((state) => state.showMinimap)
@@ -105,6 +109,8 @@ export function Header() {
   const clearFocus = useDiagramStore((state) => state.clearFocus)
   const setShowRelations = useDiagramStore((state) => state.setShowRelations)
   const { theme, setTheme } = useTheme()
+
+  const schemaViewLabel = schemaViewLabels(schemaDatabaseKind(schema)).menu
 
   const zoomInShortcut = formatForDisplay(HOTKEY_ZOOM_IN)
   const zoomOutShortcut = formatForDisplay(HOTKEY_ZOOM_OUT)
@@ -142,7 +148,7 @@ export function Header() {
                   onToggle={() => setShowMinimap(!showMinimap)}
                 />
                 <ViewToggleItem
-                  label={SHOW_SQL_VIEW_LABEL}
+                  label={schemaViewLabel}
                   checked={showSqlView}
                   onToggle={() => setShowSqlView(!showSqlView)}
                 />

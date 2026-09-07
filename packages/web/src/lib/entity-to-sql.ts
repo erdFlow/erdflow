@@ -1,16 +1,19 @@
 import type {
   Constraint,
+  DatabaseProvider,
   Entity,
   Field,
   FieldId,
   Index,
+  SqlDialect,
   UniversalSchema,
 } from "@erdflow/core"
-import { isAutoIncrement } from "../data/field-pills.js"
+import { sqlDialectFromProvider } from "@erdflow/core"
+import { resolveIdStrategy } from "../data/field-pills.js"
 
 const IDENT_SAFE = /^[a-z_][a-z0-9_]*$/i
 
-const PRISMA_TYPE_MAP: Record<string, string> = {
+const PRISMA_TYPE_MAP_PG: Record<string, string> = {
   String: "TEXT",
   Int: "INTEGER",
   BigInt: "BIGINT",
@@ -22,6 +25,30 @@ const PRISMA_TYPE_MAP: Record<string, string> = {
   Bytes: "BYTEA",
 }
 
+const PRISMA_TYPE_MAP_MYSQL: Record<string, string> = {
+  String: "VARCHAR(255)",
+  Int: "INT",
+  BigInt: "BIGINT",
+  Float: "DOUBLE",
+  Decimal: "DECIMAL",
+  Boolean: "TINYINT(1)",
+  DateTime: "DATETIME",
+  Json: "JSON",
+  Bytes: "BLOB",
+}
+
+const PRISMA_TYPE_MAP_SQLITE: Record<string, string> = {
+  String: "TEXT",
+  Int: "INTEGER",
+  BigInt: "INTEGER",
+  Float: "REAL",
+  Decimal: "REAL",
+  Boolean: "INTEGER",
+  DateTime: "TEXT",
+  Json: "TEXT",
+  Bytes: "BLOB",
+}
+
 function quoteIdent(name: string): string {
   if (IDENT_SAFE.test(name)) {
     return name
@@ -29,8 +56,44 @@ function quoteIdent(name: string): string {
   return `"${name.replaceAll('"', '""')}"`
 }
 
-function resolveSqlType(field: Field, enumNames: Set<string>): string {
-  if (field.type.native) {
+function typeMapFor(dialect: SqlDialect): Record<string, string> {
+  switch (dialect) {
+    case "mysql":
+      return PRISMA_TYPE_MAP_MYSQL
+    case "sqlite":
+      return PRISMA_TYPE_MAP_SQLITE
+    default:
+      return PRISMA_TYPE_MAP_PG
+  }
+}
+
+function resolveDialect(schema: UniversalSchema): SqlDialect {
+  const provider = schema.meta?.provider as DatabaseProvider | undefined
+  if (provider) {
+    return sqlDialectFromProvider(provider) ?? "postgresql"
+  }
+  return "postgresql"
+}
+
+function resolveSqlType(
+  field: Field,
+  enumNames: Set<string>,
+  dialect: SqlDialect
+): string {
+  const strategy = resolveIdStrategy(field)
+
+  // App-level string IDs — never emit ObjectId / native DB UUID type blindly.
+  if (strategy === "cuid" || strategy === "nanoid") {
+    return dialect === "mysql" ? "VARCHAR(255)" : "TEXT"
+  }
+  if (strategy === "uuid") {
+    if (dialect === "postgresql") {
+      return "UUID"
+    }
+    return dialect === "mysql" ? "CHAR(36)" : "TEXT"
+  }
+
+  if (field.type.native && field.type.native !== "ObjectId") {
     const base = field.type.native
     return field.type.isArray ? `${base}[]` : base
   }
@@ -40,21 +103,54 @@ function resolveSqlType(field: Field, enumNames: Set<string>): string {
     return field.type.isArray ? `${quoteIdent(name)}[]` : quoteIdent(name)
   }
 
-  const mapped = PRISMA_TYPE_MAP[name] ?? name.toUpperCase()
+  const mapped = typeMapFor(dialect)[name] ?? name.toUpperCase()
   return field.type.isArray ? `${mapped}[]` : mapped
+}
+
+function appIdComment(field: Field): string | null {
+  const strategy = resolveIdStrategy(field)
+  switch (strategy) {
+    case "cuid":
+      return "-- @default(cuid())"
+    case "nanoid":
+      return "-- @default(nanoid())"
+    case "uuid":
+      // DB-native default handled separately for Postgres
+      return null
+    default:
+      return null
+  }
 }
 
 function formatDefaultValue(
   field: Field,
   sqlType: string,
-  enumNames: Set<string>
+  enumNames: Set<string>,
+  dialect: SqlDialect
 ): string | null {
-  const raw = field.default
-  if (raw == null || raw === "") {
+  const strategy = resolveIdStrategy(field)
+
+  // Autoincrement / app generators: no SQL DEFAULT (SERIAL / comment instead).
+  if (
+    strategy === "autoincrement" ||
+    strategy === "cuid" ||
+    strategy === "nanoid" ||
+    strategy === "objectId" ||
+    strategy === "auto"
+  ) {
     return null
   }
 
-  if (isAutoIncrement(raw)) {
+  if (strategy === "uuid") {
+    if (dialect === "postgresql") {
+      return "gen_random_uuid()"
+    }
+    // MySQL/SQLite: app or trigger — annotate via comment, no fake DEFAULT.
+    return null
+  }
+
+  const raw = field.default
+  if (raw == null || raw === "") {
     return null
   }
 
@@ -64,7 +160,7 @@ function formatDefaultValue(
     lowered.includes('"name":"now"') ||
     lowered === "current_timestamp"
   ) {
-    return "NOW()"
+    return dialect === "mysql" ? "CURRENT_TIMESTAMP" : "NOW()"
   }
 
   if (lowered === "true" || lowered === "false" || lowered === "null") {
@@ -75,7 +171,6 @@ function formatDefaultValue(
     return raw
   }
 
-  // Prisma enum / string defaults may be plain or JSON-quoted.
   let literal = raw
   if (
     (raw.startsWith('"') && raw.endsWith('"')) ||
@@ -88,17 +183,7 @@ function formatDefaultValue(
     return `'${literal.replaceAll("'", "''")}'`
   }
 
-  if (
-    sqlType.includes("CHAR") ||
-    sqlType.includes("TEXT") ||
-    sqlType.includes("UUID") ||
-    sqlType.includes("JSON") ||
-    sqlType === "DATE" ||
-    sqlType.includes("TIME")
-  ) {
-    return `'${literal.replaceAll("'", "''")}'`
-  }
-
+  void sqlType
   return `'${literal.replaceAll("'", "''")}'`
 }
 
@@ -106,50 +191,89 @@ function columnDefinition(
   field: Field,
   options: {
     enumNames: Set<string>
+    dialect: SqlDialect
     isSinglePrimaryKey: boolean
     hasInlineUnique: boolean
     skipNotNull: boolean
   }
-): string {
+): { sql: string; trailingComment: string | null } {
   const parts: string[] = [quoteIdent(field.name)]
-  let sqlType = resolveSqlType(field, options.enumNames)
+  const strategy = resolveIdStrategy(field)
+  let sqlType = resolveSqlType(field, options.enumNames, options.dialect)
 
   if (
     options.isSinglePrimaryKey &&
     field.isPrimaryKey &&
-    isAutoIncrement(field.default) &&
-    (sqlType === "INTEGER" || sqlType === "INT")
+    strategy === "autoincrement"
   ) {
-    sqlType = "SERIAL"
-  } else if (
-    options.isSinglePrimaryKey &&
-    field.isPrimaryKey &&
-    isAutoIncrement(field.default) &&
-    sqlType === "BIGINT"
-  ) {
-    sqlType = "BIGSERIAL"
+    if (options.dialect === "postgresql") {
+      sqlType =
+        sqlType === "BIGINT" || field.type.name === "BigInt"
+          ? "BIGSERIAL"
+          : "SERIAL"
+    } else if (options.dialect === "mysql") {
+      // INT AUTO_INCREMENT added below
+    } else if (options.dialect === "sqlite") {
+      sqlType = "INTEGER"
+    }
   }
 
   parts.push(sqlType)
 
-  if (!field.nullable && !options.skipNotNull) {
-    parts.push("NOT NULL")
+  if (
+    options.isSinglePrimaryKey &&
+    field.isPrimaryKey &&
+    strategy === "autoincrement" &&
+    options.dialect === "mysql"
+  ) {
+    parts.push("AUTO_INCREMENT")
   }
 
-  if (options.isSinglePrimaryKey && field.isPrimaryKey) {
-    parts.push("PRIMARY KEY")
+  if (
+    options.isSinglePrimaryKey &&
+    field.isPrimaryKey &&
+    strategy === "autoincrement" &&
+    options.dialect === "sqlite"
+  ) {
+    parts.push("PRIMARY KEY AUTOINCREMENT")
+  } else {
+    if (!field.nullable && !options.skipNotNull) {
+      parts.push("NOT NULL")
+    }
+
+    if (
+      options.isSinglePrimaryKey &&
+      field.isPrimaryKey &&
+      !(strategy === "autoincrement" && options.dialect === "sqlite")
+    ) {
+      parts.push("PRIMARY KEY")
+    }
   }
 
   if (options.hasInlineUnique && field.isUnique && !field.isPrimaryKey) {
     parts.push("UNIQUE")
   }
 
-  const defaultSql = formatDefaultValue(field, sqlType, options.enumNames)
+  const defaultSql = formatDefaultValue(
+    field,
+    sqlType,
+    options.enumNames,
+    options.dialect
+  )
   if (defaultSql != null) {
     parts.push(`DEFAULT ${defaultSql}`)
   }
 
-  return parts.join(" ")
+  let trailingComment = appIdComment(field)
+  if (
+    strategy === "uuid" &&
+    options.dialect !== "postgresql" &&
+    field.isPrimaryKey
+  ) {
+    trailingComment = "-- @default(uuid())"
+  }
+
+  return { sql: parts.join(" "), trailingComment }
 }
 
 function fieldNames(entity: Entity, fieldIds: FieldId[] | undefined): string[] {
@@ -251,7 +375,6 @@ function tableConstraints(entity: Entity, constraints: Constraint[]): string[] {
     if (names.length === 0) {
       continue
     }
-    // Single-field unique is inlined on the column when possible.
     if (names.length === 1) {
       continue
     }
@@ -287,18 +410,26 @@ function enumsUsedByEntity(
   return schema.enums.filter((enumDef) => used.has(enumDef.name))
 }
 
-function formatEnumCreate(enumDef: { name: string; values: string[] }): string {
+function formatEnumCreate(
+  enumDef: { name: string; values: string[] },
+  dialect: SqlDialect
+): string {
   const values = enumDef.values
     .map((value) => `'${value.replaceAll("'", "''")}'`)
     .join(", ")
-  return `CREATE TYPE ${quoteIdent(enumDef.name)} AS ENUM (${values});`
+  if (dialect === "postgresql") {
+    return `CREATE TYPE ${quoteIdent(enumDef.name)} AS ENUM (${values});`
+  }
+  // MySQL/SQLite: enums inlined as CHECK / ENUM column — emit as comment.
+  return `-- enum ${enumDef.name}: ${values}`
 }
 
 function createTableStatement(
   entity: Entity,
   schema: UniversalSchema,
   entityById: Map<string, Entity>,
-  enumNames: Set<string>
+  enumNames: Set<string>,
+  dialect: SqlDialect
 ): string {
   const pkConstraint = schema.constraints.find(
     (constraint) =>
@@ -309,41 +440,80 @@ function createTableStatement(
     pkFieldIds.size === 1 ||
     entity.fields.filter((field) => field.isPrimaryKey).length === 1
 
-  const columnLines = entity.fields.map((field) => {
+  const columnEntries = entity.fields.map((field) => {
     const isPk = field.isPrimaryKey || pkFieldIds.has(field.id)
-    return `  ${columnDefinition(field, {
+    const strategy = resolveIdStrategy(field)
+    return columnDefinition(field, {
       enumNames,
+      dialect,
       isSinglePrimaryKey: singlePk && isPk,
       hasInlineUnique: true,
-      skipNotNull: singlePk && isPk && isAutoIncrement(field.default),
-    })}`
+      skipNotNull:
+        singlePk &&
+        isPk &&
+        strategy === "autoincrement" &&
+        dialect === "postgresql",
+    })
   })
 
   const constraintLines = [
     ...tableConstraints(entity, schema.constraints),
     ...foreignKeyClauses(entity, schema, entityById),
-  ].map((line) => `  ${line}`)
+  ]
 
-  const body = [...columnLines, ...constraintLines].join(",\n")
+  const allLines: string[] = []
+  for (const entry of columnEntries) {
+    allLines.push(
+      entry.trailingComment
+        ? `  ${entry.sql} ${entry.trailingComment}`
+        : `  ${entry.sql}`
+    )
+  }
+  for (const line of constraintLines) {
+    allLines.push(`  ${line}`)
+  }
+
+  const body = allLines
+    .map((line, index) =>
+      index < allLines.length - 1 && !line.includes(" -- @default")
+        ? `${line},`
+        : index < allLines.length - 1 && line.includes(" -- @default")
+          ? line.replace(/ ( -- @default)/, ",$1")
+          : line
+    )
+    .join("\n")
+
   return `CREATE TABLE ${quoteIdent(entity.name)} (\n${body}\n);`
 }
 
-/** Emit PostgreSQL-style DDL for a single entity (enums, table, indexes). */
+/**
+ * Emit dialect-aware DDL for a single entity (enums, table, indexes).
+ * Document databases must use entityToDocument instead.
+ */
 export function entityToSql(
   schema: UniversalSchema,
   entityId: string
 ): string | null {
+  if (schema.meta?.databaseKind === "document") {
+    return null
+  }
+
   const entity = schema.entities.find((entry) => entry.id === entityId)
   if (!entity) {
     return null
   }
 
+  const dialect = resolveDialect(schema)
   const entityById = new Map(schema.entities.map((entry) => [entry.id, entry]))
   const enumNames = new Set(schema.enums.map((entry) => entry.name))
   const usedEnums = enumsUsedByEntity(entity, schema)
 
-  const blocks: string[] = usedEnums.map(formatEnumCreate)
-  blocks.push(createTableStatement(entity, schema, entityById, enumNames))
+  const blocks: string[] = usedEnums.map((enumDef) =>
+    formatEnumCreate(enumDef, dialect)
+  )
+  blocks.push(
+    createTableStatement(entity, schema, entityById, enumNames, dialect)
+  )
 
   const indexes = indexStatements(entity, schema.indexes)
   if (indexes.length > 0) {

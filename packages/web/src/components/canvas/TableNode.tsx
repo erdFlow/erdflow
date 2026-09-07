@@ -9,9 +9,10 @@ import {
 import {
   FIELD_PILL,
   type FieldPill,
-  isAutoIncrement,
+  idStrategyPill,
   type PillTone,
   pillClass,
+  resolveIdStrategy,
 } from "../../data/field-pills.js"
 import {
   FIELD_DETAIL_COMMENT,
@@ -118,9 +119,8 @@ function TableNodeComponent({ data }: NodeProps<TableFlowNode>) {
               if (hoveredField.id in fkRefs) pills.push(FIELD_PILL.FOREIGN_KEY)
               if (hoveredField.isUnique) pills.push(FIELD_PILL.UNIQUE)
               if (!hoveredField.nullable) pills.push(FIELD_PILL.NOT_NULL)
-              if (isAutoIncrement(hoveredField.default)) {
-                pills.push(FIELD_PILL.AUTOINCREMENT)
-              }
+              const idPill = idStrategyPill(resolveIdStrategy(hoveredField))
+              if (idPill) pills.push(idPill)
 
               return pills.length > 0 ? (
                 <div className="mb-1.5 flex flex-wrap gap-1">

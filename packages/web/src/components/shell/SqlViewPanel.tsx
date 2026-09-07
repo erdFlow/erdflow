@@ -7,16 +7,14 @@ import {
 } from "@workspace/ui/components/empty"
 import { CheckIcon, CopyIcon, XIcon } from "lucide-react"
 import { useMemo, useState } from "react"
-import {
-  SHOW_SQL_VIEW_LABEL,
-  SQL_VIEW_CLOSE_LABEL,
-  SQL_VIEW_COPIED_LABEL,
-  SQL_VIEW_COPY_LABEL,
-  SQL_VIEW_EMPTY_DESCRIPTION,
-  SQL_VIEW_EMPTY_LABEL,
-} from "../../data/labels.js"
+import { SQL_VIEW_COPIED_LABEL } from "../../data/labels.js"
+import { entityToDocument } from "../../lib/entity-to-document.js"
 import { entityToSql } from "../../lib/entity-to-sql.js"
 import { renderHighlightedSql } from "../../lib/highlight-sql.js"
+import {
+  schemaDatabaseKind,
+  schemaViewLabels,
+} from "../../lib/schema-view-labels.js"
 import { useDiagramStore } from "../../store/diagram-store.js"
 
 export function SqlViewPanel() {
@@ -25,6 +23,9 @@ export function SqlViewPanel() {
   const setShowSqlView = useDiagramStore((state) => state.setShowSqlView)
   const [copied, setCopied] = useState(false)
 
+  const kind = schemaDatabaseKind(schema)
+  const labels = schemaViewLabels(kind)
+
   const entity = useMemo(() => {
     if (!schema || !focusedEntityId) {
       return null
@@ -32,24 +33,28 @@ export function SqlViewPanel() {
     return schema.entities.find((entry) => entry.id === focusedEntityId) ?? null
   }, [focusedEntityId, schema])
 
-  const sql = useMemo(() => {
+  const content = useMemo(() => {
     if (!schema || !focusedEntityId) {
       return null
     }
+    if (kind === "document") {
+      return entityToDocument(schema, focusedEntityId)
+    }
     return entityToSql(schema, focusedEntityId)
-  }, [focusedEntityId, schema])
+  }, [focusedEntityId, kind, schema])
 
   const highlighted = useMemo(
-    () => (sql ? renderHighlightedSql(sql) : null),
-    [sql]
+    () =>
+      content && kind === "relational" ? renderHighlightedSql(content) : null,
+    [content, kind]
   )
 
   async function handleCopy() {
-    if (!sql) {
+    if (!content) {
       return
     }
     try {
-      await navigator.clipboard.writeText(sql)
+      await navigator.clipboard.writeText(content)
       setCopied(true)
       window.setTimeout(() => setCopied(false), 1500)
     } catch {
@@ -60,11 +65,11 @@ export function SqlViewPanel() {
   return (
     <aside
       className="flex size-full min-h-0 flex-col border-l bg-background"
-      aria-label={SHOW_SQL_VIEW_LABEL}
+      aria-label={labels.menu}
     >
       <div className="flex h-12 shrink-0 items-center justify-between gap-2 border-b px-3">
         <div className="min-w-0">
-          <p className="font-medium text-sm">{SHOW_SQL_VIEW_LABEL}</p>
+          <p className="font-medium text-sm">{labels.menu}</p>
           {entity ? (
             <p className="truncate text-muted-foreground text-xs">
               {entity.name}
@@ -72,7 +77,7 @@ export function SqlViewPanel() {
           ) : null}
         </div>
         <div className="flex shrink-0 items-center gap-1">
-          {sql ? (
+          {content ? (
             <Button
               type="button"
               variant="ghost"
@@ -80,7 +85,7 @@ export function SqlViewPanel() {
               onClick={() => {
                 void handleCopy()
               }}
-              aria-label={copied ? SQL_VIEW_COPIED_LABEL : SQL_VIEW_COPY_LABEL}
+              aria-label={copied ? SQL_VIEW_COPIED_LABEL : labels.copy}
             >
               {copied ? <CheckIcon /> : <CopyIcon />}
             </Button>
@@ -90,7 +95,7 @@ export function SqlViewPanel() {
             variant="ghost"
             size="icon-sm"
             onClick={() => setShowSqlView(false)}
-            aria-label={SQL_VIEW_CLOSE_LABEL}
+            aria-label={labels.close}
           >
             <XIcon />
           </Button>
@@ -98,15 +103,15 @@ export function SqlViewPanel() {
       </div>
 
       <div className="min-h-0 flex-1 overflow-auto p-3">
-        {highlighted && sql ? (
+        {content ? (
           <pre className="overflow-x-auto whitespace-pre-wrap rounded-md border bg-muted p-3 font-mono text-xs leading-relaxed">
-            <code>{highlighted}</code>
+            <code>{highlighted ?? content}</code>
           </pre>
         ) : (
           <Empty className="border-0">
             <EmptyHeader>
-              <EmptyTitle>{SQL_VIEW_EMPTY_LABEL}</EmptyTitle>
-              <EmptyDescription>{SQL_VIEW_EMPTY_DESCRIPTION}</EmptyDescription>
+              <EmptyTitle>{labels.emptyTitle}</EmptyTitle>
+              <EmptyDescription>{labels.emptyDescription}</EmptyDescription>
             </EmptyHeader>
           </Empty>
         )}

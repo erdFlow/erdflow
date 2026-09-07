@@ -1,8 +1,11 @@
 import type {
   Constraint,
+  DatabaseKind,
   Entity,
+  EntityKind,
   Enum,
   Field,
+  IdStrategy,
   Index,
   Relation,
   RelationCardinality,
@@ -17,7 +20,9 @@ import {
   createFieldId,
   createIndexId,
   createRelationId,
+  databaseKindFromProvider,
   normalizeReferentialAction,
+  parseDatabaseProvider,
 } from "@erdflow/core"
 import prismaInternals from "@prisma/internals"
 
@@ -79,8 +84,67 @@ function formatDefault(value: unknown): string | undefined {
   return JSON.stringify(value)
 }
 
+/** Map Prisma DMMF default / native type → structured IdStrategy. */
+function resolveIdStrategy(
+  field: DmmfField
+): IdStrategy | undefined {
+  const native = field.nativeType?.[0]
+  if (native === "ObjectId") {
+    return "objectId"
+  }
+
+  if (!field.hasDefaultValue || field.default == null) {
+    return undefined
+  }
+
+  const value = field.default
+  let name: string | undefined
+  if (typeof value === "object" && value !== null && "name" in value) {
+    name = String((value as { name: unknown }).name)
+  } else if (typeof value === "string") {
+    name = value
+  }
+
+  if (!name) {
+    return undefined
+  }
+
+  switch (name.toLowerCase()) {
+    case "autoincrement":
+      return "autoincrement"
+    case "uuid":
+      return "uuid"
+    case "cuid":
+      return "cuid"
+    case "nanoid":
+      return "nanoid"
+    case "auto":
+      return "auto"
+    default:
+      return undefined
+  }
+}
+
+/**
+ * Read `provider = "…"` from the first datasource block.
+ * Multi-datasource projects are out of scope — first match wins.
+ */
+export function extractDatasourceProvider(
+  datamodel: string
+): ReturnType<typeof parseDatabaseProvider> {
+  const match = datamodel.match(
+    /datasource\s+\w+\s*\{[^}]*\bprovider\s*=\s*"([^"]+)"/s
+  )
+  return parseDatabaseProvider(match?.[1])
+}
+
+function entityKindForDatabase(kind: DatabaseKind): EntityKind {
+  return kind === "document" ? "collection" : "table"
+}
+
 function mapScalarField(modelName: string, field: DmmfField): Field {
   const nativeType = field.nativeType?.[0]
+  const idStrategy = resolveIdStrategy(field)
   return {
     id: createFieldId(modelName, field.name),
     name: field.name,
@@ -93,11 +157,15 @@ function mapScalarField(modelName: string, field: DmmfField): Field {
     default: field.hasDefaultValue ? formatDefault(field.default) : undefined,
     isPrimaryKey: field.isId,
     isUnique: field.isUnique,
+    idStrategy,
     comment: field.documentation ?? undefined,
   }
 }
 
-function mapModel(model: DmmfModel): {
+function mapModel(
+  model: DmmfModel,
+  entityKind: EntityKind
+): {
   entity: Entity
   constraints: Constraint[]
 } {
@@ -164,7 +232,7 @@ function mapModel(model: DmmfModel): {
     entity: {
       id: entityId,
       name: model.name,
-      kind: "model",
+      kind: entityKind,
       fields,
       comment: model.documentation ?? undefined,
     },
@@ -326,6 +394,10 @@ export async function parsePrismaSchema(
   input: string,
   meta?: SchemaMeta
 ): Promise<UniversalSchema> {
+  const provider = extractDatasourceProvider(input)
+  const databaseKind = databaseKindFromProvider(provider)
+  const entityKind = entityKindForDatabase(databaseKind)
+
   const datamodel = normalizeDatamodelForDmmf(input)
   const dmmf = (await getDMMF({
     datamodel,
@@ -336,7 +408,7 @@ export async function parsePrismaSchema(
   const constraints: Constraint[] = []
 
   for (const model of dmmf.datamodel.models) {
-    const mapped = mapModel(model)
+    const mapped = mapModel(model, entityKind)
     entities.push(mapped.entity)
     constraints.push(...mapped.constraints)
   }
@@ -360,7 +432,11 @@ export async function parsePrismaSchema(
     relations,
     indexes,
     constraints,
-    meta,
+    meta: {
+      ...meta,
+      provider,
+      databaseKind,
+    },
   }
 
   assertValidSchema(schema)

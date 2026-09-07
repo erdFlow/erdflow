@@ -1,11 +1,15 @@
 import type { UniversalSchema } from "@erdflow/core"
 import type { SatelliteGroup } from "./extract-leaves.js"
 import { entityNodeDimensions } from "./node-dimensions.js"
+import {
+  GRID_GAP,
+  type GridItemSize,
+  gridBounds,
+  placeGridAt,
+} from "./place-grid.js"
 import type { LayoutEdge, LayoutNode, LayoutResult } from "./types.js"
 
 type Side = "left" | "right" | "top" | "bottom"
-
-const GRID_GAP = 40
 
 function pickFreeSide(
   hub: LayoutNode,
@@ -64,30 +68,12 @@ function pickFreeSide(
   return best
 }
 
-function placeGrid(
+function placeGridBesideHub(
   hub: LayoutNode,
   side: Side,
-  leafSizes: Array<{ id: string; width: number; height: number }>
+  leafSizes: GridItemSize[]
 ): LayoutNode[] {
-  const cols = Math.max(1, Math.ceil(Math.sqrt(leafSizes.length)))
-  const rows = Math.ceil(leafSizes.length / cols)
-
-  const colWidths: number[] = Array.from({ length: cols }, () => 0)
-  const rowHeights: number[] = Array.from({ length: rows }, () => 0)
-
-  for (let i = 0; i < leafSizes.length; i += 1) {
-    const leaf = leafSizes[i]
-    if (!leaf) continue
-    const col = i % cols
-    const row = Math.floor(i / cols)
-    colWidths[col] = Math.max(colWidths[col] ?? 0, leaf.width)
-    rowHeights[row] = Math.max(rowHeights[row] ?? 0, leaf.height)
-  }
-
-  const gridWidth =
-    colWidths.reduce((sum, w) => sum + w, 0) + GRID_GAP * Math.max(0, cols - 1)
-  const gridHeight =
-    rowHeights.reduce((sum, h) => sum + h, 0) + GRID_GAP * Math.max(0, rows - 1)
+  const { width: gridWidth, height: gridHeight } = gridBounds(leafSizes)
 
   let originX = hub.x
   let originY = hub.y
@@ -111,31 +97,7 @@ function placeGrid(
       break
   }
 
-  const placed: LayoutNode[] = []
-  let y = originY
-  for (let row = 0; row < rows; row += 1) {
-    let x = originX
-    const rowHeight = rowHeights[row] ?? 0
-    for (let col = 0; col < cols; col += 1) {
-      const index = row * cols + col
-      const leaf = leafSizes[index]
-      const colWidth = colWidths[col] ?? 0
-      if (leaf) {
-        placed.push({
-          id: leaf.id,
-          kind: "entity",
-          x,
-          y,
-          width: leaf.width,
-          height: leaf.height,
-        })
-      }
-      x += colWidth + GRID_GAP
-    }
-    y += rowHeight + GRID_GAP
-  }
-
-  return placed
+  return placeGridAt(originX, originY, leafSizes, "entity")
 }
 
 /**
@@ -179,7 +141,7 @@ export function placeLeaves(
     }
 
     const side = pickFreeSide(hub, nodesById, core.edges)
-    const placed = placeGrid(hub, side, leafSizes)
+    const placed = placeGridBesideHub(hub, side, leafSizes)
     for (const node of placed) {
       nodes.push(node)
       nodesById.set(node.id, node)
