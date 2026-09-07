@@ -28,6 +28,9 @@ export {
 export {
   exportDiagramPng,
   exportDiagramSvg,
+  finishExportCapture,
+  prepareExportCapture,
+  resolveExportSize,
   suggestedDiagramFilename,
 } from "./export-diagram.js"
 export { getConnectedIds } from "./focus-utils.js"

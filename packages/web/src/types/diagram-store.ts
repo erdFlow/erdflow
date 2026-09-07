@@ -29,6 +29,8 @@ export interface DiagramState {
   showMinimap: boolean
   showSqlView: boolean
   showRelationshipTable: boolean
+  /** When true, React Flow renders all nodes (for full-diagram PNG/SVG export). */
+  exportCapturing: boolean
   sqlViewWidth: number
   /** Selected schema version for future multi-version filtering. */
   selectedSchemaVersion: string | null
@@ -46,6 +48,7 @@ export interface DiagramState {
   setShowMinimap: (show: boolean) => void
   setShowSqlView: (show: boolean) => void
   setShowRelationshipTable: (show: boolean) => void
+  setExportCapturing: (capturing: boolean) => void
   setSqlViewWidth: (width: number) => void
   setSelectedSchemaVersion: (version: string | null) => void
   setZoom: (zoom: number) => void

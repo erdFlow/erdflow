@@ -6,6 +6,7 @@
     "build": "turbo build",
     "dev": "turbo dev",
     "erdflow-prisma": "pnpm --filter @erdflow/prisma build && node packages/prisma/dist/cli.js",
+    "erdflow-laravel": "pnpm --filter @erdflow/laravel build && node packages/laravel/dist/cli.js",
     "lint": "biome lint .",
     "format": "biome format --write .",
     "check": "biome check .",

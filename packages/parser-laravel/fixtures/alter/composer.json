@@ -1,0 +1,6 @@
+{
+  "name": "laravel-alter-fixture",
+  "require": {
+    "laravel/framework": "^11.0"
+  }
+}

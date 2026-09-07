@@ -1,0 +1,64 @@
+{
+  "name": "@erdflow/laravel",
+  "version": "0.1.0",
+  "description": "Interactive ERD from Laravel migrations — local-first, opens in your browser",
+  "license": "MIT",
+  "author": "abhimanyujangid",
+  "keywords": [
+    "laravel",
+    "erd",
+    "database",
+    "migrations",
+    "schema",
+    "diagram",
+    "entity-relationship",
+    "erdflow"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/erdFlow/erdflow.git",
+    "directory": "packages/laravel"
+  },
+  "homepage": "https://github.com/erdFlow/erdflow/tree/main/packages/laravel#readme",
+  "bugs": {
+    "url": "https://github.com/erdFlow/erdflow/issues"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "bin": {
+    "erdflow-laravel": "./dist/cli.js"
+  },
+  "files": [
+    "dist/cli.js",
+    "dist/public",
+    "README.md",
+    "AGENTS.md",
+    "llms.txt"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "pnpm --filter web build && rm -rf public && cp -R ../prisma/public public && tsup && rm -rf dist/public && cp -R public dist/public && chmod +x dist/cli.js",
+    "prepublishOnly": "pnpm build",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test tests/**/*.test.ts"
+  },
+  "dependencies": {
+    "chokidar": "^4.0.3",
+    "commander": "^14.0.3",
+    "open": "^10.2.0",
+    "ws": "^8.19.0"
+  },
+  "devDependencies": {
+    "@erdflow/core": "workspace:*",
+    "@erdflow/parser-laravel": "workspace:*",
+    "@types/node": "^24",
+    "@types/ws": "^8.18.1",
+    "tsx": "^4.20.6",
+    "tsup": "^8.5.0",
+    "typescript": "~6"
+  }
+}

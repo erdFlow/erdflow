@@ -45,6 +45,7 @@ export const useDiagramStore = create<DiagramState>((set, get) => ({
   showMinimap: false,
   showSqlView: false,
   showRelationshipTable: true,
+  exportCapturing: false,
   sqlViewWidth: SQL_VIEW_WIDTH_DEFAULT,
   selectedSchemaVersion: null,
   zoom: 1,
@@ -94,6 +95,7 @@ export const useDiagramStore = create<DiagramState>((set, get) => ({
   setShowSqlView: (showSqlView) => set({ showSqlView }),
   setShowRelationshipTable: (showRelationshipTable) =>
     set({ showRelationshipTable }),
+  setExportCapturing: (exportCapturing) => set({ exportCapturing }),
   setSqlViewWidth: (width) => set({ sqlViewWidth: clampSqlViewWidth(width) }),
   setSelectedSchemaVersion: (selectedSchemaVersion) =>
     set({ selectedSchemaVersion }),

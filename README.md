@@ -5,7 +5,8 @@ Local-first schema ERDs, published **by domain**.
 | Package | Install |
 | --- | --- |
 | **[@erdflow/prisma](./packages/prisma/README.md)** | `npx @erdflow/prisma` |
-| `@erdflow/laravel` (planned) | separate package later |
+| **[@erdflow/laravel](./packages/laravel/README.md)** | `npx @erdflow/laravel` |
+| `@erdflow/drizzle` (planned) | separate package later |
 
 Shared libraries (`@erdflow/core`, layout, web, parsers) stay **private** in this monorepo — users install the domain CLI, not a universal schema library.
 
@@ -85,6 +86,7 @@ docs/           # Developer guides + deployment
 packages/
   core/         # Universal Schema (private)
   prisma/       # Published as @erdflow/prisma
+  laravel/      # Published as @erdflow/laravel
   web/          # Visualizer UI (private)
   layout/       # ELK.js layout (private)
   ui/           # Shared shadcn components

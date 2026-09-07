@@ -70,6 +70,7 @@ function SchemaCanvasInner() {
   const focusedEntityId = useDiagramStore((state) => state.focusedEntityId)
   const showRelations = useDiagramStore((state) => state.showRelations)
   const showMinimap = useDiagramStore((state) => state.showMinimap)
+  const exportCapturing = useDiagramStore((state) => state.exportCapturing)
   const setFocusedEntityId = useDiagramStore(
     (state) => state.setFocusedEntityId
   )
@@ -166,7 +167,7 @@ function SchemaCanvasInner() {
       edgeTypes={edgeTypes}
       fitView
       minZoom={CANVAS_MIN_ZOOM}
-      onlyRenderVisibleElements
+      onlyRenderVisibleElements={!exportCapturing}
       panOnScroll
       zoomOnScroll
       nodesDraggable

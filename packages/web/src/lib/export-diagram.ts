@@ -2,9 +2,10 @@ import type { UniversalSchema } from "@erdflow/core"
 import { getNodesBounds, getViewportForBounds } from "@xyflow/react"
 import { toPng, toSvg } from "html-to-image"
 import { useDiagramStore } from "../store/diagram-store.js"
+import type { DiagramFlowNode } from "../types/flow-types.js"
 
 const VIEWPORT_SELECTOR = ".react-flow__viewport"
-const MIN_ZOOM = 0.5
+const MIN_ZOOM = 0.01
 const MAX_ZOOM = 2
 const FIT_PADDING = 0.1
 const MAX_DIMENSION = 8192
@@ -31,7 +32,8 @@ export function suggestedDiagramFilename(
   return `${schemaBasename(schema)}${extension}`
 }
 
-function resolveExportSize(bounds: {
+/** Clamp export canvas size so huge graphs stay under MAX_DIMENSION. */
+export function resolveExportSize(bounds: {
   x: number
   y: number
   width: number
@@ -57,14 +59,49 @@ function getViewportElement(): HTMLElement {
   return element
 }
 
-async function captureOptions(backgroundColor: string): Promise<{
+function waitForPaint(): Promise<void> {
+  return new Promise((resolve) => {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => resolve())
+    })
+  })
+}
+
+function nodesHaveMeasurements(nodes: DiagramFlowNode[]): boolean {
+  return nodes.every(
+    (node) =>
+      (node.measured?.width ?? node.width ?? 0) > 0 &&
+      (node.measured?.height ?? node.height ?? 0) > 0
+  )
+}
+
+async function waitForNodeMeasurements(
+  maxFrames = 30
+): Promise<DiagramFlowNode[]> {
+  for (let frame = 0; frame < maxFrames; frame += 1) {
+    const nodes = useDiagramStore.getState().nodes
+    if (nodes.length === 0 || nodesHaveMeasurements(nodes)) {
+      return nodes
+    }
+    await waitForPaint()
+  }
+  return useDiagramStore.getState().nodes
+}
+
+/**
+ * Enable full-graph render, wait for paint/measure, return capture geometry.
+ * Always pair with `finishExportCapture()` in a finally block.
+ */
+export async function prepareExportCapture(backgroundColor: string): Promise<{
   element: HTMLElement
   width: number
   height: number
   style: Partial<CSSStyleDeclaration> & Record<string, string>
   backgroundColor: string
 }> {
-  const nodes = useDiagramStore.getState().nodes
+  useDiagramStore.getState().setExportCapturing(true)
+  await waitForPaint()
+  const nodes = await waitForNodeMeasurements()
   if (nodes.length === 0) {
     throw new Error("No diagram nodes to export")
   }
@@ -94,6 +131,10 @@ async function captureOptions(backgroundColor: string): Promise<{
   }
 }
 
+export function finishExportCapture(): void {
+  useDiagramStore.getState().setExportCapturing(false)
+}
+
 function dataUrlToBlob(dataUrl: string): Blob {
   const [header, data = ""] = dataUrl.split(",")
   const isBase64 = header?.includes("base64")
@@ -121,31 +162,39 @@ function dataUrlToSvgString(dataUrl: string): string {
   return dataUrl
 }
 
-/** Capture the React Flow viewport as a PNG blob. */
+/** Capture the full React Flow diagram as a PNG blob. */
 export async function exportDiagramPng(options: {
   backgroundColor: string
 }): Promise<Blob> {
-  const capture = await captureOptions(options.backgroundColor)
-  const dataUrl = await toPng(capture.element, {
-    backgroundColor: capture.backgroundColor,
-    width: capture.width,
-    height: capture.height,
-    style: capture.style,
-    pixelRatio: 2,
-  })
-  return dataUrlToBlob(dataUrl)
+  try {
+    const capture = await prepareExportCapture(options.backgroundColor)
+    const dataUrl = await toPng(capture.element, {
+      backgroundColor: capture.backgroundColor,
+      width: capture.width,
+      height: capture.height,
+      style: capture.style,
+      pixelRatio: 2,
+    })
+    return dataUrlToBlob(dataUrl)
+  } finally {
+    finishExportCapture()
+  }
 }
 
-/** Capture the React Flow viewport as an SVG document string. */
+/** Capture the full React Flow diagram as an SVG document string. */
 export async function exportDiagramSvg(options: {
   backgroundColor: string
 }): Promise<string> {
-  const capture = await captureOptions(options.backgroundColor)
-  const dataUrl = await toSvg(capture.element, {
-    backgroundColor: capture.backgroundColor,
-    width: capture.width,
-    height: capture.height,
-    style: capture.style,
-  })
-  return dataUrlToSvgString(dataUrl)
+  try {
+    const capture = await prepareExportCapture(options.backgroundColor)
+    const dataUrl = await toSvg(capture.element, {
+      backgroundColor: capture.backgroundColor,
+      width: capture.width,
+      height: capture.height,
+      style: capture.style,
+    })
+    return dataUrlToSvgString(dataUrl)
+  } finally {
+    finishExportCapture()
+  }
 }

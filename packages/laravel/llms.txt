@@ -1,0 +1,36 @@
+# @erdflow/laravel
+
+> Interactive ERD from Laravel migrations. Opens http://127.0.0.1:4317/
+
+## Run
+
+```bash
+npx @erdflow/laravel
+npx @erdflow/laravel --root ./backend
+npx @erdflow/laravel --root /path/to/laravel-app --port 5000
+npx @erdflow/laravel --no-open
+npx @erdflow/laravel --no-watch
+```
+
+Binary after install: `erdflow-laravel`. Requires Node.js ≥ 20.
+
+Parses `database/migrations/*.php` for tables/columns and `app/Models` Eloquent relations (`belongsTo`, `hasOne`, `hasMany`, `belongsToMany`). Morphs not yet.
+
+## Agent instructions
+
+Read **AGENTS.md** in this package for detection, `--root`, and what is / is not parsed.
+
+## Files in this package
+
+- README.md — human overview
+- AGENTS.md — Laravel instructions for AI agents
+- llms.txt — this index
+
+## Family
+
+Other domains ship as separate packages (`@erdflow/prisma`, …), not this one.
+
+## Links
+
+- https://github.com/erdFlow/erdflow
+- https://www.npmjs.com/package/@erdflow/laravel
