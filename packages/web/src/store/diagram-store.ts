@@ -8,11 +8,26 @@ import {
   SQL_VIEW_WIDTH_MIN,
 } from "../data/constants.js"
 import { mergeSchemaUpdate } from "../lib/merge-schema.js"
+import {
+  loadManualPositions,
+  positionsSchemaKey,
+  saveManualPositions,
+} from "../lib/persist-positions.js"
 import type { DiagramState } from "../types/diagram-store.js"
 import type { DiagramFlowNode, TableFlowNode } from "../types/flow-types.js"
 
 function clampSqlViewWidth(width: number): number {
   return Math.min(SQL_VIEW_WIDTH_MAX, Math.max(SQL_VIEW_WIDTH_MIN, width))
+}
+
+function schemaPositionsKey(
+  schema: NonNullable<DiagramState["schema"]>
+): string {
+  return positionsSchemaKey({
+    source: schema.meta?.source,
+    adapter: schema.meta?.adapter,
+    entityIds: schema.entities.map((entity) => entity.id),
+  })
 }
 
 export const useDiagramStore = create<DiagramState>((set, get) => ({
@@ -37,11 +52,19 @@ export const useDiagramStore = create<DiagramState>((set, get) => ({
 
   applySchema: async (schema) => {
     const state = get()
+    const key = schemaPositionsKey(schema)
+    const storedPositions = loadManualPositions(key)
+    // Session drags win over stored; stored fills gaps after refresh.
+    const manualPositions = {
+      ...storedPositions,
+      ...state.manualPositions,
+    }
+
     const merged = await mergeSchemaUpdate(schema, {
       previousSchema: state.schema,
       previousNodes: state.nodes,
       previousEdges: state.edges,
-      manualPositions: state.manualPositions,
+      manualPositions,
       collapsedTables: state.collapsedTables,
     })
 
@@ -49,6 +72,7 @@ export const useDiagramStore = create<DiagramState>((set, get) => ({
       schema,
       nodes: merged.nodes,
       edges: merged.edges,
+      manualPositions,
       error: null,
       selectedEdgeId: null,
       selectedSchemaVersion:
@@ -107,15 +131,21 @@ export const useDiagramStore = create<DiagramState>((set, get) => ({
       nodes: applyNodeChanges(changes, state.nodes) as DiagramState["nodes"],
     })),
   setManualPosition: (nodeId, position) =>
-    set((state) => ({
-      manualPositions: {
+    set((state) => {
+      const manualPositions = {
         ...state.manualPositions,
         [nodeId]: position,
-      },
-      nodes: state.nodes.map((node) =>
-        node.id === nodeId ? { ...node, position } : node
-      ),
-    })),
+      }
+      if (state.schema) {
+        saveManualPositions(schemaPositionsKey(state.schema), manualPositions)
+      }
+      return {
+        manualPositions,
+        nodes: state.nodes.map((node) =>
+          node.id === nodeId ? { ...node, position } : node
+        ),
+      }
+    }),
   setCanvasControls: (canvasControls) => set({ canvasControls }),
   clearFocus: () => set({ focusedEntityId: null, selectedEdgeId: null }),
 }))

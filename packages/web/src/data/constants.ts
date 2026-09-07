@@ -55,5 +55,9 @@ export const SQL_VIEW_WIDTH_DEFAULT = 384
 export const SQL_VIEW_WIDTH_MIN = 280
 export const SQL_VIEW_WIDTH_MAX = 720
 
+/** Persist dragged node positions across refresh (localStorage; 7-day TTL). */
+export const MANUAL_POSITIONS_STORAGE_KEY_PREFIX = "erdflow:manual-positions"
+export const MANUAL_POSITIONS_TTL_MS = 7 * 24 * 60 * 60 * 1000
+
 export type NodeKindValue = (typeof NodeKind)[keyof typeof NodeKind]
 export type EdgeKindValue = (typeof EdgeKind)[keyof typeof EdgeKind]
