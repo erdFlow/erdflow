@@ -3,8 +3,8 @@ import { readFileSync } from "node:fs"
 import { dirname, join } from "node:path"
 import test from "node:test"
 import { fileURLToPath } from "node:url"
-import { layoutSchema } from "@erdflow/layout"
 import { dbmlAdapter } from "@erdflow/parser-dbml"
+import { layoutSchema } from "../src/index.js"
 
 const fixtureDir = join(dirname(fileURLToPath(import.meta.url)), "../fixtures")
 const LARGE_TABLE_COUNT = 100

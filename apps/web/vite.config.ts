@@ -16,7 +16,7 @@ export default defineConfig({
     },
   },
   build: {
-    outDir: "../../packages/cli/public",
+    outDir: "../../packages/prisma/public",
     emptyOutDir: true,
   },
   base: "/",

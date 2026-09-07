@@ -104,12 +104,12 @@ export const myAdapter: SchemaAdapter = {
 
 | Package | Description |
 | --- | --- |
-| [`erdflow`](https://www.npmjs.com/package/erdflow) | CLI — `npx erdflow` opens an interactive ERD in the browser |
-| `@erdflow/parser-prisma` | Prisma schema adapter |
-| `@erdflow/parser-dbml` | DBML adapter |
-| `@erdflow/parser-sql` | SQL adapter |
-| `@erdflow/layout` | ELK.js graph layout |
-| `@erdflow/web` | React visualizer components |
+| [`@erdflow/prisma`](https://www.npmjs.com/package/@erdflow/prisma) | Published CLI — `npx @erdflow/prisma` |
+| `@erdflow/parser-prisma` | Prisma schema adapter (monorepo) |
+| `@erdflow/layout` | ELK.js graph layout (monorepo) |
+| `@erdflow/web` | React visualizer (monorepo) |
+
+`@erdflow/core` is a **private** monorepo package — not intended for direct npm install by end users.
 
 ## License
 

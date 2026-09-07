@@ -1,25 +1,24 @@
 {
-  "name": "erdflow",
+  "name": "@erdflow/prisma",
   "version": "0.1.0",
-  "description": "Local-first database schema IDE — detect Prisma, DBML, or SQL schemas and open an interactive ERD in the browser",
+  "description": "Interactive ERD from a Prisma schema — local-first, opens in your browser",
   "license": "MIT",
   "author": "abhimanyujangid",
   "keywords": [
+    "prisma",
     "erd",
     "database",
     "schema",
-    "prisma",
-    "dbml",
-    "sql",
     "diagram",
-    "entity-relationship"
+    "entity-relationship",
+    "erdflow"
   ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/erdFlow/erdflow.git",
-    "directory": "packages/cli"
+    "directory": "packages/prisma"
   },
-  "homepage": "https://github.com/erdFlow/erdflow#readme",
+  "homepage": "https://github.com/erdFlow/erdflow/tree/main/packages/prisma#readme",
   "bugs": {
     "url": "https://github.com/erdFlow/erdflow/issues"
   },
@@ -27,12 +26,20 @@
   "engines": {
     "node": ">=20"
   },
-  "bin": "./dist/cli.js",
+  "bin": {
+    "erdflow-prisma": "./dist/cli.js"
+  },
   "files": [
     "dist/cli.js",
     "dist/public",
-    "README.md"
+    "media",
+    "README.md",
+    "AGENTS.md",
+    "llms.txt"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "pnpm --filter web build && tsup && rm -rf dist/public && cp -R public dist/public && chmod +x dist/cli.js",
     "prepublishOnly": "pnpm build",
@@ -48,10 +55,7 @@
   },
   "devDependencies": {
     "@erdflow/core": "workspace:*",
-    "@erdflow/layout": "workspace:*",
-    "@erdflow/parser-dbml": "workspace:*",
     "@erdflow/parser-prisma": "workspace:*",
-    "@erdflow/parser-sql": "workspace:*",
     "@types/node": "^24",
     "@types/ws": "^8.18.1",
     "tsx": "^4.20.6",

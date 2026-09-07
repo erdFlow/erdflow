@@ -14,13 +14,13 @@ pnpm --filter @erdflow/parser-prisma test
 pnpm --filter @erdflow/parser-prisma typecheck
 
 # CLI tests that hit Prisma detect / load / watch / errors
-pnpm --filter erdflow test
+pnpm --filter @erdflow/prisma test
 ```
 
 After parser source changes, rebuild the CLI before manual UI checks:
 
 ```bash
-pnpm --filter erdflow build
+pnpm --filter @erdflow/prisma build
 ```
 
 ---
@@ -35,7 +35,7 @@ pnpm --filter erdflow build
 | Relation shapes | `tests/relations.test.ts` | `fixtures/relations/catalog.prisma` |
 | Parse size ladder | `tests/performance.test.ts` | generated via `tests/helpers/sized-prisma.ts` |
 
-CLI-side (in `packages/cli/tests/`):
+CLI-side (in `packages/prisma/tests/`):
 
 | Area | Test file |
 | --- | --- |

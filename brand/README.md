@@ -23,5 +23,5 @@ Premium developer-tool identity aligned with the app theme (indigo/violet primar
 ## CLI
 
 ```bash
-npx erdflow
+npx @erdflow/prisma
 ```

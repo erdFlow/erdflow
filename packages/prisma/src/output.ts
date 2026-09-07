@@ -1,17 +1,6 @@
 import { relative } from "node:path"
 import type { UniversalSchema } from "@erdflow/core"
-import type { AdapterName, ResolvedSource } from "./scan.js"
-
-function formatAdapterName(name: AdapterName): string {
-  switch (name) {
-    case "prisma":
-      return "Prisma"
-    case "dbml":
-      return "DBML"
-    case "sql":
-      return "SQL"
-  }
-}
+import type { ResolvedSource } from "./scan.js"
 
 export function printDetectionSummary(
   rootDir: string,
@@ -21,12 +10,9 @@ export function printDetectionSummary(
   packageHints: string[] = []
 ): void {
   const relativePath = relative(rootDir, source.filePath) || source.filePath
-  const dialectSuffix = source.dialect ? ` (${source.dialect})` : ""
 
   console.log("")
-  console.log(
-    `✓ Detected ${formatAdapterName(source.adapterName)}${dialectSuffix}`
-  )
+  console.log("✓ Detected Prisma")
   if (packageHints.length > 0) {
     console.log(`  package.json hints: ${packageHints.join(", ")}`)
   }
@@ -53,12 +39,9 @@ export function printUnsupportedProject(message: string): void {
   console.error("✗ No schema source found")
   console.error(`  ${message}`)
   console.error("")
-  console.error("Supported formats:")
+  console.error("Supported:")
   console.error("  • Prisma   prisma/schema.prisma   (or --prisma <path>)")
-  console.error("  • DBML     *.dbml                 (or --dbml <path>)")
-  console.error(
-    "  • SQL      *.sql                  (PostgreSQL, MySQL, SQLite)"
-  )
+  console.error("  • Multi-file folder or prisma.config.ts")
   console.error("")
 }
 

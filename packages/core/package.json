@@ -1,7 +1,8 @@
 {
   "name": "@erdflow/core",
   "version": "0.1.1",
-  "description": "Universal schema model for erdFlow — shared types, validation, and adapter interfaces",
+  "private": true,
+  "description": "Universal schema model for erdFlow — shared types, validation, and adapter interfaces (monorepo private)",
   "license": "MIT",
   "author": "abhimanyujangid",
   "keywords": [
@@ -20,9 +21,6 @@
     "url": "https://github.com/erdFlow/erdflow/issues"
   },
   "type": "module",
-  "publishConfig": {
-    "access": "public"
-  },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -42,7 +40,6 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "prepublishOnly": "pnpm build",
     "typecheck": "tsc --noEmit",
     "test": "tsx --test tests/**/*.test.ts"
   },

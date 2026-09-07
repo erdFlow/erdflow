@@ -4,6 +4,8 @@ Docs for `@erdflow/parser-prisma`: local CLI + UI, tests, fixtures, and v6/v7 la
 
 Package: [`packages/parser-prisma`](../../../packages/parser-prisma)
 
+**Published CLI (npm `@erdflow/prisma`):** [`packages/prisma/AGENTS.md`](../../../packages/prisma/AGENTS.md) and [`packages/prisma/llms.txt`](../../../packages/prisma/llms.txt) ship inside the package.
+
 ---
 
 ## Doc map (tasks / features)
@@ -12,7 +14,7 @@ Package: [`packages/parser-prisma`](../../../packages/parser-prisma)
 | --- | --- |
 | Run local development (CLI + Vite UI) with Prisma | [local-development.md](./local-development.md) |
 | Run all Prisma unit / error / size tests | [testing.md](./testing.md) |
-| Fixture catalog (basic, v6/v7, invalid, relations) | [fixtures.md](./fixtures.md) |
+| Fixture catalog (basic, v6/v7, invalid, relations, Mongo, ID strategies) | [fixtures.md](./fixtures.md) |
 | v6 vs v7 file layouts & schema resolution | [layouts-v6-v7.md](./layouts-v6-v7.md) |
 | Prisma troubleshooting | [troubleshooting.md](./troubleshooting.md) |
 
@@ -24,14 +26,14 @@ Package: [`packages/parser-prisma`](../../../packages/parser-prisma)
 cd erdFlow
 pnpm install
 pnpm --filter @erdflow/core build
-pnpm --filter erdflow build
+pnpm --filter @erdflow/prisma build
 ```
 
 **Local UI (two terminals)** — details in [local-development.md](./local-development.md):
 
 ```bash
 # Terminal 1
-node packages/cli/dist/cli.js --no-open --prisma packages/parser-prisma/fixtures/basic.prisma
+node packages/prisma/dist/cli.js --no-open --prisma packages/parser-prisma/fixtures/basic.prisma
 
 # Terminal 2
 pnpm --filter web dev

@@ -5,7 +5,7 @@
   "scripts": {
     "build": "turbo build",
     "dev": "turbo dev",
-    "erdflow": "pnpm --filter @erdflow/cli build && node packages/cli/dist/cli.js",
+    "erdflow-prisma": "pnpm --filter @erdflow/prisma build && node packages/prisma/dist/cli.js",
     "lint": "biome lint .",
     "format": "biome format --write .",
     "check": "biome check .",

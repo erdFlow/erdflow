@@ -5,6 +5,8 @@ All paths are under `packages/parser-prisma/fixtures/`.
 ```text
 fixtures/
 ├── basic.prisma                 # classic multi-model schema
+├── mongodb-basic.prisma         # Mongo provider + ObjectId
+├── id-strategies.prisma         # uuid / cuid / nanoid / autoincrement
 ├── v6-classic/schema.prisma     # url in datasource, prisma-client-js
 ├── v7-url-less/schema.prisma    # no url; generator prisma-client
 ├── v7-multifile/                # prisma.config.ts + prisma/schema/*.prisma
@@ -26,6 +28,8 @@ fixtures/
 | v7 datasource without `url` | `v7-url-less/` |
 | Multi-file schema folder | `v7-multifile/` |
 | Custom path via `prisma.config.ts` | `v7-config-custom/` |
+| MongoDB provider + ObjectId | `mongodb-basic.prisma` |
+| uuid / cuid / nanoid / autoincrement | `id-strategies.prisma` |
 | Bad syntax / empty / broken FK / duplicate model | `invalid/*` |
 | Relation catalog | `relations/catalog.prisma` |
 

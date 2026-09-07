@@ -1,0 +1,45 @@
+# @erdflow/prisma
+
+> Interactive ERD from a Prisma schema. Opens http://127.0.0.1:4317/
+
+## Run
+
+```bash
+npx @erdflow/prisma
+npx @erdflow/prisma --prisma ./prisma/schema.prisma
+npx @erdflow/prisma --prisma ./prisma/schema
+npx @erdflow/prisma --prisma ./backend/prisma/schema.prisma
+npx @erdflow/prisma --prisma ./prisma/schema.prisma --port 5000
+npx @erdflow/prisma --prisma ./prisma/schema.prisma --no-open
+npx @erdflow/prisma --prisma ./prisma/schema.prisma --no-watch
+```
+
+Binary after install: `erdflow-prisma`. Requires Node.js ≥ 20.
+
+Supports Prisma v6 and v7 (multi-file, `prisma.config.ts`).
+
+## Providers
+
+- SQL (postgresql, mysql, sqlite, …) → ERD + SQL View
+- mongodb → Document View (ObjectId / collections)
+
+## Agent instructions
+
+Read **AGENTS.md** in this package for Prisma detection, monorepo pitfalls, and UI expectations.
+
+## Files in this package
+
+- README.md — human overview + screenshots
+- AGENTS.md — Prisma instructions for AI agents
+- llms.txt — this index
+- media/prisma-erd.png — ERD canvas
+- media/prisma-focus.png — focused table
+
+## Family
+
+Other domains (e.g. Laravel) will be separate packages (`@erdflow/laravel`, …), not this one.
+
+## Links
+
+- https://github.com/erdFlow/erdflow
+- https://www.npmjs.com/package/@erdflow/prisma

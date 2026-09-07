@@ -3,7 +3,7 @@ import { mkdtemp, writeFile } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import test from "node:test"
-import { loadSchema } from "../src/parse-source.js"
+import { loadSchema } from "../src/run.js"
 import { resolveSchemaSource } from "../src/scan.js"
 
 test("resolveSchemaSource rejects missing explicit prisma path", async () => {
