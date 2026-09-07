@@ -69,21 +69,18 @@ export function validateIndexes(
       }
     }
 
-    if (
-      constraint.referencedEntityId &&
-      !entityById.has(constraint.referencedEntityId)
-    ) {
-      issues.push(
-        issue(
-          "broken_relation",
-          `Constraint "${constraint.id}" references missing entity "${constraint.referencedEntityId}".`,
-          "warning",
-          `constraints.${constraint.id}.referencedEntityId`
+    if (constraint.kind === "foreign_key") {
+      if (!entityById.has(constraint.referencedEntityId)) {
+        issues.push(
+          issue(
+            "broken_relation",
+            `Constraint "${constraint.id}" references missing entity "${constraint.referencedEntityId}".`,
+            "warning",
+            `constraints.${constraint.id}.referencedEntityId`
+          )
         )
-      )
-    }
+      }
 
-    if (constraint.referencedFieldIds) {
       for (const fieldId of constraint.referencedFieldIds) {
         if (!fieldById.has(fieldId)) {
           issues.push(

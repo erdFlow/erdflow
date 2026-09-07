@@ -1,10 +1,10 @@
 import assert from "node:assert/strict"
 import test from "node:test"
-import { validateSchema } from "../../src/validation/index.js"
 import {
   createRelationCatalogSchema,
   createSizedSchema,
 } from "../../src/testing/index.js"
+import { validateSchema } from "../../src/validation/index.js"
 
 test("createSizedSchema rejects invalid counts", () => {
   assert.throws(() => createSizedSchema(0), /positive integer/)

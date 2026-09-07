@@ -15,6 +15,7 @@ import {
   createFieldId,
   createIndexId,
   createRelationId,
+  normalizeReferentialAction,
 } from "@erdflow/core"
 import sqliteParser from "node-sql-parser/build/sqlite.js"
 
@@ -161,9 +162,11 @@ function mapTableNode(node: SqliteAstNode): {
       continue
     }
 
-    const onDelete = fk.reference_definition?.on_action?.find((action) =>
-      action.type?.includes("delete")
-    )?.value?.value
+    const onDelete = normalizeReferentialAction(
+      fk.reference_definition?.on_action?.find((action) =>
+        action.type?.includes("delete")
+      )?.value?.value
+    )
 
     relations.push({
       id: createRelationId(

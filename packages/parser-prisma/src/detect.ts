@@ -105,9 +105,7 @@ export async function readPrismaConfigSchemaPath(
       if (match?.[1]) {
         return { configPath, schemaPath: match[1] }
       }
-    } catch {
-      continue
-    }
+    } catch {}
   }
 
   return null

@@ -1,15 +1,19 @@
-import type { Entity, Enum, UniversalSchema } from "@erdflow/core"
+import type { Entity, EntityId, Enum, UniversalSchema } from "@erdflow/core"
 import {
   ENTITY_HEADER_HEIGHT,
   ENTITY_NODE_WIDTH,
   ENUM_NODE_WIDTH,
   type LayoutResult,
 } from "@erdflow/layout"
-import type { Edge, Node } from "@xyflow/react"
 import { EdgeKind, NodeKind } from "../data/constants.js"
-import type { RelationEdgeData } from "../types/flow-types.js"
+import type {
+  DiagramFlowNode,
+  RelationEdgeData,
+  RelationFlowEdge,
+} from "../types/flow-types.js"
 import { enumUsages } from "./enum-usages.js"
 import { foreignKeyRefs } from "./foreign-key-refs.js"
+import { entityNameByIdMap, formatRelationLabel } from "./format-relation.js"
 import { entityNodeHeight, enumNodeHeight } from "./node-dimensions.js"
 import { resolveRelationHandles } from "./relation-handles.js"
 
@@ -17,7 +21,7 @@ interface BuildFlowGraphOptions {
   schema: UniversalSchema
   layout: LayoutResult
   manualPositions: Record<string, { x: number; y: number }>
-  collapsedTables: Record<string, boolean>
+  collapsedTables: Partial<Record<EntityId, boolean>>
 }
 
 export function schemaToFlow({
@@ -25,11 +29,18 @@ export function schemaToFlow({
   layout,
   manualPositions,
   collapsedTables,
-}: BuildFlowGraphOptions): { nodes: Node[]; edges: Edge[] } {
+}: BuildFlowGraphOptions): {
+  nodes: DiagramFlowNode[]
+  edges: RelationFlowEdge[]
+} {
   const fkRefsByEntity = foreignKeyRefs(schema)
   const layoutNodeMap = new Map(layout.nodes.map((node) => [node.id, node]))
   const layoutEdgeMap = new Map(layout.edges.map((edge) => [edge.id, edge]))
-  const nodes: Node[] = []
+  const entityById = new Map(
+    schema.entities.map((entity) => [entity.id, entity])
+  )
+  const nameById = entityNameByIdMap(schema.entities)
+  const nodes: DiagramFlowNode[] = []
 
   for (const entity of schema.entities) {
     const layoutNode = layoutNodeMap.get(entity.id)
@@ -81,9 +92,17 @@ export function schemaToFlow({
     })
   }
 
-  const edges: Edge<RelationEdgeData>[] = schema.relations.map((relation) => {
+  const edges: RelationFlowEdge[] = schema.relations.map((relation) => {
     const layoutEdge = layoutEdgeMap.get(relation.id)
-    const handles = resolveRelationHandles(schema, relation)
+    const handles = resolveRelationHandles(relation, entityById)
+    const data: RelationEdgeData = {
+      relation,
+      label: formatRelationLabel(relation, nameById),
+      points: layoutEdge?.points,
+      useFieldHandles: false,
+      fromFieldIndex: handles.fromFieldIndex,
+      toFieldIndex: handles.toFieldIndex,
+    }
 
     return {
       id: relation.id,
@@ -92,13 +111,7 @@ export function schemaToFlow({
       target: relation.to.entityId,
       sourceHandle: handles.sourceHandle,
       targetHandle: handles.targetHandle,
-      data: {
-        relation,
-        points: layoutEdge?.points,
-        useFieldHandles: false,
-        fromFieldIndex: handles.fromFieldIndex,
-        toFieldIndex: handles.toFieldIndex,
-      },
+      data,
     }
   })
 
@@ -107,28 +120,29 @@ export function schemaToFlow({
 
 export function updateFlowData(
   schema: UniversalSchema,
-  nodes: Node[],
-  collapsedTables: Record<string, boolean>
-): Node[] {
+  nodes: DiagramFlowNode[],
+  collapsedTables: Partial<Record<EntityId, boolean>>
+): DiagramFlowNode[] {
   const entityMap = new Map(
     schema.entities.map((entity) => [entity.id, entity])
   )
   const enumMap = new Map(schema.enums.map((enumDef) => [enumDef.id, enumDef]))
   const fkRefsByEntity = foreignKeyRefs(schema)
 
-  const nextNodes: Node[] = []
+  const nextNodes: DiagramFlowNode[] = []
 
   for (const node of nodes) {
     const entity = entityMap.get(node.id as Entity["id"])
     if (entity) {
-      const collapsed = collapsedTables[node.id] ?? false
+      const collapsed = collapsedTables[entity.id] ?? false
       nextNodes.push({
         ...node,
+        type: NodeKind.TABLE,
         data: {
-          kind: "entity" as const,
+          kind: "entity",
           entity,
           collapsed,
-          fkRefs: fkRefsByEntity.get(node.id) ?? {},
+          fkRefs: fkRefsByEntity.get(entity.id) ?? {},
         },
         style: {
           ...node.style,
@@ -142,8 +156,9 @@ export function updateFlowData(
     if (enumDef) {
       nextNodes.push({
         ...node,
+        type: NodeKind.ENUM,
         data: {
-          kind: "enum" as const,
+          kind: "enum",
           enumDef,
           usages: enumUsages(schema, enumDef.name),
         },

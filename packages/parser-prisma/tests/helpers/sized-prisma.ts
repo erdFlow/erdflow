@@ -1,7 +1,9 @@
 /** Generate a Prisma schema string with N chained models for size benches. */
 export function generateSizedPrismaSchema(entityCount: number): string {
   if (!Number.isInteger(entityCount) || entityCount < 1) {
-    throw new Error(`entityCount must be a positive integer, got ${entityCount}`)
+    throw new Error(
+      `entityCount must be a positive integer, got ${entityCount}`
+    )
   }
 
   const header = `generator client {
@@ -37,8 +39,7 @@ model Table0 {
     }
 
     const parent = `Table${i - 1}`
-    const childLine =
-      i < entityCount - 1 ? `\n  children Table${i + 1}[]` : ""
+    const childLine = i < entityCount - 1 ? `\n  children Table${i + 1}[]` : ""
     models.push(`model ${name} {
   id       Int    @id @default(autoincrement())
   name     String

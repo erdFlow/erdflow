@@ -1,13 +1,13 @@
 import { access, readFile } from "node:fs/promises"
 import { isAbsolute, join, resolve } from "node:path"
-import type { SchemaAdapter } from "@erdflow/core"
+import type { SchemaAdapter, SqlDialect } from "@erdflow/core"
 import { dbmlAdapter, findFilesByExtension } from "@erdflow/parser-dbml"
 import {
   detectPrismaProject,
+  type PrismaSchemaLocation,
   prismaAdapter,
   resolvePrismaSchemaLocation,
   resolvePrismaSchemaLocationFromPath,
-  type PrismaSchemaLocation,
 } from "@erdflow/parser-prisma"
 import { findSqlFiles, inferSqlDialect, sqlAdapter } from "@erdflow/parser-sql"
 
@@ -25,7 +25,7 @@ export interface ResolvedSource {
   watchPaths: string[]
   /** Absolute `.prisma` paths to concatenate when loading (Prisma multi-file). */
   schemaFiles?: string[]
-  dialect?: "postgresql" | "mysql" | "sqlite"
+  dialect?: SqlDialect
 }
 
 async function fileExists(path: string): Promise<boolean> {
@@ -62,7 +62,10 @@ async function resolveExplicitPrisma(
   rootDir: string,
   prismaPath: string
 ): Promise<ResolvedSource> {
-  const location = await resolvePrismaSchemaLocationFromPath(rootDir, prismaPath)
+  const location = await resolvePrismaSchemaLocationFromPath(
+    rootDir,
+    prismaPath
+  )
   if (!location) {
     const filePath = resolvePath(rootDir, prismaPath)
     throw new Error(`Prisma schema file not found: ${filePath}`)

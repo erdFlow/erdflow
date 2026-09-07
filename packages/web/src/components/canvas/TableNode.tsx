@@ -21,7 +21,7 @@ import {
   FIELD_DETAIL_REFERENCES,
 } from "../../data/labels.js"
 import { typeColorClass } from "../../data/type-colors.js"
-import type { TableNodeData } from "../../types/flow-types.js"
+import type { TableFlowNode } from "../../types/flow-types.js"
 import { DiagramNodeShell } from "./DiagramNodeShell.js"
 
 function AttrPill({ label, tone }: { label: string; tone: PillTone }) {
@@ -42,16 +42,15 @@ function DetailLine({ label, value }: { label: string; value: string }) {
   )
 }
 
-function TableNodeComponent({ data }: NodeProps) {
-  const nodeData = data as TableNodeData
-  const entity = nodeData.entity
-  const fkRefs = useMemo(() => nodeData.fkRefs ?? {}, [nodeData.fkRefs])
+function TableNodeComponent({ data }: NodeProps<TableFlowNode>) {
+  const entity = data.entity
+  const fkRefs = useMemo(() => data.fkRefs ?? {}, [data.fkRefs])
   const [hovered, setHovered] = useState<number | null>(null)
   const hoveredField = hovered != null ? entity.fields[hovered] : undefined
 
   return (
     <DiagramNodeShell title={entity.name}>
-      {!nodeData.collapsed ? (
+      {!data.collapsed ? (
         <div className="flex flex-col" onMouseLeave={() => setHovered(null)}>
           {entity.fields.map((field, index) => {
             const isFk = field.id in fkRefs
@@ -92,7 +91,7 @@ function TableNodeComponent({ data }: NodeProps) {
       ) : null}
 
       <NodeToolbar
-        isVisible={hoveredField != null && !nodeData.collapsed}
+        isVisible={hoveredField != null && !data.collapsed}
         position={Position.Right}
         offset={FIELD_TOOLBAR_OFFSET}
       >

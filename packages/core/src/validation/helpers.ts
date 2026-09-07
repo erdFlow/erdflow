@@ -7,7 +7,7 @@ import type {
 import type { ValidationIssue } from "./types.js"
 
 export function issue(
-  code: string,
+  code: ValidationIssue["code"],
   message: string,
   severity: ValidationIssue["severity"],
   path?: string

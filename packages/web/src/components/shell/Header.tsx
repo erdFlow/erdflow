@@ -41,8 +41,8 @@ import {
 } from "../../data/labels.js"
 import { useDiagramStore } from "../../store/diagram-store.js"
 import { useTheme } from "../theme-provider.js"
-import { SourceSelector } from "./SourceSelector.js"
 import { ExportMenu } from "./ExportMenu.js"
+import { SourceSelector } from "./SourceSelector.js"
 
 function ViewToggleItem({
   label,
@@ -102,7 +102,6 @@ export function Header() {
   const setShowRelationshipTable = useDiagramStore(
     (state) => state.setShowRelationshipTable
   )
-  const canvasControls = useDiagramStore((state) => state.canvasControls)
   const clearFocus = useDiagramStore((state) => state.clearFocus)
   const setShowRelations = useDiagramStore((state) => state.setShowRelations)
   const { theme, setTheme } = useTheme()
@@ -195,7 +194,9 @@ export function Header() {
             <DropdownMenuLabel>Canvas</DropdownMenuLabel>
             <DropdownMenuItem
               textValue="Zoom in"
-              onAction={() => canvasControls?.zoomIn()}
+              onAction={() => {
+                useDiagramStore.getState().canvasControls?.zoomIn()
+              }}
             >
               <PlusIcon />
               Zoom in
@@ -203,7 +204,9 @@ export function Header() {
             </DropdownMenuItem>
             <DropdownMenuItem
               textValue="Zoom out"
-              onAction={() => canvasControls?.zoomOut()}
+              onAction={() => {
+                useDiagramStore.getState().canvasControls?.zoomOut()
+              }}
             >
               <MinusIcon />
               Zoom out
@@ -211,7 +214,9 @@ export function Header() {
             </DropdownMenuItem>
             <DropdownMenuItem
               textValue="Fit view"
-              onAction={() => canvasControls?.fitView()}
+              onAction={() => {
+                useDiagramStore.getState().canvasControls?.fitView()
+              }}
             >
               <Maximize2Icon />
               Fit view

@@ -17,6 +17,7 @@ import {
   createFieldId,
   createIndexId,
   createRelationId,
+  normalizeReferentialAction,
 } from "@erdflow/core"
 import prismaInternals from "@prisma/internals"
 
@@ -259,8 +260,8 @@ function mapRelations(models: DmmfModel[]): Relation[] {
           ),
         },
         cardinality: inferCardinality(field, inverse),
-        onDelete: field.relationOnDelete ?? undefined,
-        onUpdate: field.relationOnUpdate ?? undefined,
+        onDelete: normalizeReferentialAction(field.relationOnDelete),
+        onUpdate: normalizeReferentialAction(field.relationOnUpdate),
       })
     }
   }

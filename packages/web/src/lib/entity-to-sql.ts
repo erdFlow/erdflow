@@ -170,16 +170,16 @@ function foreignKeyClauses(
   const clauses: string[] = []
   const seen = new Set<string>()
 
-  const fkConstraints = schema.constraints.filter(
-    (constraint) =>
-      constraint.kind === "foreign_key" && constraint.entityId === entity.id
-  )
+  for (const constraint of schema.constraints) {
+    if (
+      constraint.kind !== "foreign_key" ||
+      constraint.entityId !== entity.id
+    ) {
+      continue
+    }
 
-  for (const constraint of fkConstraints) {
     const fromNames = fieldNames(entity, constraint.fieldIds)
-    const refEntity = constraint.referencedEntityId
-      ? entityById.get(constraint.referencedEntityId)
-      : undefined
+    const refEntity = entityById.get(constraint.referencedEntityId)
     if (!refEntity || fromNames.length === 0) {
       continue
     }

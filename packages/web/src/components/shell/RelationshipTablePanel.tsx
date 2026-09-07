@@ -135,7 +135,9 @@ export function RelationshipTablePanel() {
       <div className="flex shrink-0 items-start justify-between gap-2 border-b bg-muted/40 px-3 py-2">
         <div className="min-w-0">
           <p className="font-medium text-sm">{RELATIONSHIP_TABLE_TITLE}</p>
-          <p className="truncate text-muted-foreground text-xs">{entity.name}</p>
+          <p className="truncate text-muted-foreground text-xs">
+            {entity.name}
+          </p>
         </div>
         <Button
           type="button"

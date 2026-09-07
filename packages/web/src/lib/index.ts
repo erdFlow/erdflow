@@ -1,5 +1,12 @@
 export { typeColorClass } from "../data/type-colors.js"
 export {
+  buildDisplayEdges,
+  buildDisplayNodes,
+  matchingNodeIds,
+  nodeDisplayName,
+  nodeMatchesQuery,
+} from "./diagram-display.js"
+export {
   anchor,
   buildPathFromPoints,
   cardinalitySymbols,
@@ -14,27 +21,22 @@ export {
 } from "./entity-relations.js"
 export { entityToSql } from "./entity-to-sql.js"
 export {
-  exportDiagramPng,
-  exportDiagramSvg,
-  suggestedDiagramFilename,
-} from "./export-diagram.js"
-export { saveBlobFile, saveTextFile } from "./save-text-file.js"
-export {
   type EnumUsage,
   enumUsages,
   formatEnumUsage,
 } from "./enum-usages.js"
-export { getConnectedIds } from "./focus-utils.js"
 export {
-  buildDisplayEdges,
-  buildDisplayNodes,
-  matchingNodeIds,
-  nodeDisplayName,
-  nodeMatchesQuery,
-} from "./diagram-display.js"
+  exportDiagramPng,
+  exportDiagramSvg,
+  suggestedDiagramFilename,
+} from "./export-diagram.js"
+export { getConnectedIds } from "./focus-utils.js"
 export { foreignKeyRefs } from "./foreign-key-refs.js"
 export { formatAdapterLabel } from "./format-adapter.js"
-export { formatRelationLabel } from "./format-relation.js"
+export {
+  entityNameByIdMap,
+  formatRelationLabel,
+} from "./format-relation.js"
 export {
   type MergeSchemaOptions,
   type MergeSchemaResult,
@@ -61,6 +63,7 @@ export {
   type ResolvedRelationHandles,
   resolveRelationHandles,
 } from "./relation-handles.js"
+export { saveBlobFile, saveTextFile } from "./save-text-file.js"
 export {
   connectSchemaSocket,
   fetchInitialSchema,

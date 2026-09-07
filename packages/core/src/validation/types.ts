@@ -1,7 +1,17 @@
 export type ValidationSeverity = "error" | "warning"
 
+export type ValidationIssueCode =
+  | "duplicate_id"
+  | "empty_entity_name"
+  | "empty_enum_name"
+  | "missing_primary_key"
+  | "missing_entity_reference"
+  | "missing_field_reference"
+  | "broken_relation"
+  | "duplicate_index"
+
 export interface ValidationIssue {
-  code: string
+  code: ValidationIssueCode
   message: string
   severity: ValidationSeverity
   path?: string

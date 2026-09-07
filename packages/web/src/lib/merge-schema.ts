@@ -1,21 +1,31 @@
-import type { Entity, Enum, Relation, UniversalSchema } from "@erdflow/core"
+import type {
+  Entity,
+  EntityId,
+  Enum,
+  Relation,
+  UniversalSchema,
+} from "@erdflow/core"
 import { layoutSchema, schemaTopologyHash } from "@erdflow/layout"
-import type { Edge, Node } from "@xyflow/react"
-import type { RelationEdgeData } from "../types/flow-types.js"
+import type {
+  DiagramFlowNode,
+  RelationEdgeData,
+  RelationFlowEdge,
+} from "../types/flow-types.js"
+import { entityNameByIdMap, formatRelationLabel } from "./format-relation.js"
 import { resolveRelationHandles } from "./relation-handles.js"
 import { schemaToFlow, updateFlowData } from "./schema-to-flow.js"
 
 export interface MergeSchemaOptions {
   previousSchema: UniversalSchema | null
-  previousNodes: Node[]
-  previousEdges: Edge[]
+  previousNodes: DiagramFlowNode[]
+  previousEdges: RelationFlowEdge[]
   manualPositions: Record<string, { x: number; y: number }>
-  collapsedTables: Record<string, boolean>
+  collapsedTables: Partial<Record<EntityId, boolean>>
 }
 
 export interface MergeSchemaResult {
-  nodes: Node[]
-  edges: Edge[]
+  nodes: DiagramFlowNode[]
+  edges: RelationFlowEdge[]
   topologyChanged: boolean
 }
 
@@ -55,7 +65,13 @@ export async function mergeSchemaUpdate(
     options.collapsedTables
   )
 
-  const relationIds = new Set(schema.relations.map((relation) => relation.id))
+  const relationById = new Map(
+    schema.relations.map((relation) => [relation.id, relation])
+  )
+  const entityById = new Map(
+    schema.entities.map((entity) => [entity.id, entity])
+  )
+  const nameById = entityNameByIdMap(schema.entities)
   const entityIds = new Set([
     ...schema.entities.map((entity) => entity.id),
     ...schema.enums.map((enumDef) => enumDef.id),
@@ -65,16 +81,22 @@ export async function mergeSchemaUpdate(
     entityIds.has(node.id as Entity["id"] | Enum["id"])
   )
   const edges = options.previousEdges
-    .filter((edge) => relationIds.has(edge.id as Relation["id"]))
+    .filter((edge) => relationById.has(edge.id as Relation["id"]))
     .map((edge) => {
-      const relation = schema.relations.find(
-        (candidate) => candidate.id === edge.id
-      )
+      const relation = relationById.get(edge.id as Relation["id"])
       if (!relation) {
         return edge
       }
 
-      const handles = resolveRelationHandles(schema, relation)
+      const handles = resolveRelationHandles(relation, entityById)
+      const data: RelationEdgeData = {
+        relation,
+        label: formatRelationLabel(relation, nameById),
+        useFieldHandles: false,
+        fromFieldIndex: handles.fromFieldIndex,
+        toFieldIndex: handles.toFieldIndex,
+        points: edge.data?.points,
+      }
 
       return {
         ...edge,
@@ -82,14 +104,7 @@ export async function mergeSchemaUpdate(
         target: relation.to.entityId,
         sourceHandle: handles.sourceHandle,
         targetHandle: handles.targetHandle,
-        data: {
-          ...(edge.data as Record<string, unknown>),
-          relation,
-          useFieldHandles: false,
-          fromFieldIndex: handles.fromFieldIndex,
-          toFieldIndex: handles.toFieldIndex,
-          points: (edge.data as RelationEdgeData | undefined)?.points,
-        },
+        data,
       }
     })
 

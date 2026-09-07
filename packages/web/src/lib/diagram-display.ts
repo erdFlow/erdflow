@@ -1,28 +1,31 @@
-import type { Edge, Node } from "@xyflow/react"
-import {
-  FOCUS_EDGE_OPACITY,
-  FOCUS_NODE_OPACITY,
-} from "../data/constants.js"
-import type { DiagramNodeData } from "../types/flow-types.js"
+import { FOCUS_EDGE_OPACITY, FOCUS_NODE_OPACITY } from "../data/constants.js"
+import type { DiagramFlowNode, RelationFlowEdge } from "../types/flow-types.js"
 
 export interface FocusSets {
   nodeIds: Set<string>
   edgeIds: Set<string>
 }
 
-export function nodeDisplayName(node: Node): string {
-  const data = node.data as DiagramNodeData
-  return data.kind === "entity" ? data.entity.name : data.enumDef.name
+export function nodeDisplayName(node: DiagramFlowNode): string {
+  return node.data.kind === "entity"
+    ? node.data.entity.name
+    : node.data.enumDef.name
 }
 
-export function nodeMatchesQuery(node: Node, query: string): boolean {
+export function nodeMatchesQuery(
+  node: DiagramFlowNode,
+  query: string
+): boolean {
   if (!query) {
     return true
   }
   return nodeDisplayName(node).toLowerCase().includes(query)
 }
 
-export function matchingNodeIds(nodes: Node[], query: string): string[] {
+export function matchingNodeIds(
+  nodes: DiagramFlowNode[],
+  query: string
+): string[] {
   if (!query) {
     return []
   }
@@ -30,10 +33,10 @@ export function matchingNodeIds(nodes: Node[], query: string): string[] {
 }
 
 export function buildDisplayNodes(
-  nodes: Node[],
+  nodes: DiagramFlowNode[],
   query: string,
   focusSets: FocusSets | null
-): Node[] {
+): DiagramFlowNode[] {
   const filterByQuery = Boolean(query) && !focusSets
 
   return nodes.map((node) => {
@@ -60,12 +63,12 @@ export function buildDisplayNodes(
 }
 
 export function buildDisplayEdges(
-  edges: Edge[],
-  nodes: Node[],
+  edges: RelationFlowEdge[],
+  nodes: DiagramFlowNode[],
   query: string,
   focusSets: FocusSets | null,
   showRelations: boolean
-): Edge[] {
+): RelationFlowEdge[] {
   const filterByQuery = Boolean(query) && !focusSets
   const visibleIds = filterByQuery
     ? new Set(matchingNodeIds(nodes, query))
@@ -80,6 +83,11 @@ export function buildDisplayEdges(
     let opacity = 1
     if (!hidden && focusSets && showRelations) {
       opacity = focusSets.edgeIds.has(edge.id) ? 1 : FOCUS_EDGE_OPACITY
+    }
+
+    const currentOpacity = edge.style?.opacity ?? 1
+    if (edge.hidden === hidden && currentOpacity === opacity) {
+      return edge
     }
 
     return {

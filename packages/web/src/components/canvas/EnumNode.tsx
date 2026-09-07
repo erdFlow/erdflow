@@ -4,13 +4,12 @@ import { InfoIcon } from "lucide-react"
 import { memo, useMemo } from "react"
 import { ENUM_USAGE_ARIA_LABEL, enumUsedByLabel } from "../../data/labels.js"
 import { formatEnumUsage } from "../../lib/enum-usages.js"
-import type { EnumNodeData } from "../../types/flow-types.js"
+import type { EnumFlowNode } from "../../types/flow-types.js"
 import { DiagramNodeShell } from "./DiagramNodeShell.js"
 
-function EnumNodeComponent({ data }: NodeProps) {
-  const nodeData = data as EnumNodeData
-  const enumDef = nodeData.enumDef
-  const usages = nodeData.usages ?? []
+function EnumNodeComponent({ data }: NodeProps<EnumFlowNode>) {
+  const enumDef = data.enumDef
+  const usages = data.usages ?? []
 
   const usageLabel = useMemo(
     () => enumUsedByLabel(usages.map(formatEnumUsage)),

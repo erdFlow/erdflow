@@ -17,6 +17,7 @@ import {
   createFieldId,
   createIndexId,
   createRelationId,
+  normalizeReferentialAction,
 } from "@erdflow/core"
 
 interface DbmlField {
@@ -239,8 +240,8 @@ function mapRef(ref: DbmlRef, refIndex: number): Relation | null {
       ),
     },
     cardinality: relationCardinality(fromEndpoint, toEndpoint),
-    onDelete: ref.onDelete,
-    onUpdate: ref.onUpdate,
+    onDelete: normalizeReferentialAction(ref.onDelete),
+    onUpdate: normalizeReferentialAction(ref.onUpdate),
   }
 }
 

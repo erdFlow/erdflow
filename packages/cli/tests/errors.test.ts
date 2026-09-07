@@ -23,8 +23,11 @@ test("loadSchema rejects invalid prisma content without crashing", async () => {
   )
 
   const source = await resolveSchemaSource(rootDir, { prisma: schemaPath })
-  await assert.rejects(() => loadSchema(source), (error: unknown) => {
-    assert.ok(error instanceof Error)
-    return true
-  })
+  await assert.rejects(
+    () => loadSchema(source),
+    (error: unknown) => {
+      assert.ok(error instanceof Error)
+      return true
+    }
+  )
 })

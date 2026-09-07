@@ -1,4 +1,6 @@
-import type { UniversalSchema } from "../schema/types.js"
+import type { SqlDialect, UniversalSchema } from "../schema/types.js"
+
+export type { SqlDialect } from "../schema/types.js"
 
 export interface ProjectContext {
   rootDir: string
@@ -6,7 +8,7 @@ export interface ProjectContext {
 
 export interface ParseOptions {
   filePath?: string
-  dialect?: "postgresql" | "mysql" | "sqlite"
+  dialect?: SqlDialect
 }
 
 export interface SchemaAdapter {

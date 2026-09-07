@@ -1,5 +1,7 @@
-import type { UniversalSchema } from "@erdflow/core"
-import type { Edge, Node, NodeChange } from "@xyflow/react"
+import type { EntityId, UniversalSchema } from "@erdflow/core"
+import type { LayoutPoint } from "@erdflow/layout"
+import type { NodeChange } from "@xyflow/react"
+import type { DiagramFlowNode, RelationFlowEdge } from "./flow-types.js"
 
 export type ConnectionStatus =
   | "connecting"
@@ -15,12 +17,12 @@ export interface CanvasControls {
 
 export interface DiagramState {
   schema: UniversalSchema | null
-  nodes: Node[]
-  edges: Edge[]
+  nodes: DiagramFlowNode[]
+  edges: RelationFlowEdge[]
   error: string | null
   connectionStatus: ConnectionStatus
   searchQuery: string
-  focusedEntityId: string | null
+  focusedEntityId: EntityId | null
   /** Pinned relationship edge highlight (same visuals as hover). */
   selectedEdgeId: string | null
   showRelations: boolean
@@ -31,14 +33,14 @@ export interface DiagramState {
   /** Selected schema version for future multi-version filtering. */
   selectedSchemaVersion: string | null
   zoom: number
-  collapsedTables: Record<string, boolean>
-  manualPositions: Record<string, { x: number; y: number }>
+  collapsedTables: Partial<Record<EntityId, boolean>>
+  manualPositions: Record<string, LayoutPoint>
   canvasControls: CanvasControls | null
   applySchema: (schema: UniversalSchema) => Promise<void>
   setError: (message: string | null) => void
   setConnectionStatus: (status: ConnectionStatus) => void
   setSearchQuery: (query: string) => void
-  setFocusedEntityId: (entityId: string | null) => void
+  setFocusedEntityId: (entityId: EntityId | null) => void
   setSelectedEdgeId: (edgeId: string | null) => void
   setShowRelations: (show: boolean) => void
   setShowMinimap: (show: boolean) => void
@@ -47,12 +49,9 @@ export interface DiagramState {
   setSqlViewWidth: (width: number) => void
   setSelectedSchemaVersion: (version: string | null) => void
   setZoom: (zoom: number) => void
-  toggleTableCollapsed: (entityId: string) => void
-  onNodesChange: (changes: NodeChange[]) => void
-  setManualPosition: (
-    nodeId: string,
-    position: { x: number; y: number }
-  ) => void
+  toggleTableCollapsed: (entityId: EntityId) => void
+  onNodesChange: (changes: NodeChange<DiagramFlowNode>[]) => void
+  setManualPosition: (nodeId: string, position: LayoutPoint) => void
   setCanvasControls: (controls: CanvasControls | null) => void
   clearFocus: () => void
 }

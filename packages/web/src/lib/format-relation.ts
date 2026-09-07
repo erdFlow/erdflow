@@ -1,13 +1,12 @@
-import type { Entity, Relation } from "@erdflow/core"
+import type { Entity, EntityId, Relation } from "@erdflow/core"
 
 /** Hover label like "Post To PostCategory" from relation endpoints. */
 export function formatRelationLabel(
   relation: Relation,
-  entities: Entity[]
+  entityNameById: ReadonlyMap<EntityId, string>
 ): string | null {
-  const byId = new Map(entities.map((entity) => [entity.id, entity.name]))
-  const fromName = byId.get(relation.from.entityId)
-  const toName = byId.get(relation.to.entityId)
+  const fromName = entityNameById.get(relation.from.entityId)
+  const toName = entityNameById.get(relation.to.entityId)
 
   if (fromName && toName) {
     return `${fromName} To ${toName}`
@@ -18,4 +17,8 @@ export function formatRelationLabel(
   }
 
   return null
+}
+
+export function entityNameByIdMap(entities: Entity[]): Map<EntityId, string> {
+  return new Map(entities.map((entity) => [entity.id, entity.name]))
 }

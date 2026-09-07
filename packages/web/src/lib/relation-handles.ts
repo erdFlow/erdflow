@@ -1,4 +1,4 @@
-import type { Relation, UniversalSchema } from "@erdflow/core"
+import type { Entity, EntityId, Relation } from "@erdflow/core"
 
 /**
  * Stable node-level handle ids. Every table/enum node renders one hidden source
@@ -22,17 +22,14 @@ export interface ResolvedRelationHandles {
 /**
  * Resolves the handle ids and (best-effort) field row indices for a relation.
  * Composite FKs anchor to their first column only.
+ * Pass a prebuilt `entityById` map when resolving many relations in one pass.
  */
 export function resolveRelationHandles(
-  schema: UniversalSchema,
-  relation: Relation
+  relation: Relation,
+  entityById: ReadonlyMap<EntityId, Entity>
 ): ResolvedRelationHandles {
-  const fromEntity = schema.entities.find(
-    (entity) => entity.id === relation.from.entityId
-  )
-  const toEntity = schema.entities.find(
-    (entity) => entity.id === relation.to.entityId
-  )
+  const fromEntity = entityById.get(relation.from.entityId)
+  const toEntity = entityById.get(relation.to.entityId)
 
   const fromFieldId = relation.from.fieldIds?.[0]
   const toFieldId = relation.to.fieldIds?.[0]

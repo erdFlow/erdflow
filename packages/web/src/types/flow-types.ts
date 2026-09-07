@@ -1,7 +1,10 @@
 import type { Entity, Enum, Relation } from "@erdflow/core"
 import type { LayoutPoint } from "@erdflow/layout"
+import type { Edge, Node } from "@xyflow/react"
+import type { EdgeKind, NodeKind } from "../data/constants.js"
 
-export interface TableNodeData {
+/** Satisfies xyflow `Record<string, unknown>` without a loose index signature. */
+export type TableNodeData = {
   kind: "entity"
   entity: Entity
   collapsed: boolean
@@ -10,7 +13,6 @@ export interface TableNodeData {
    * The keys are the set of FK field ids.
    */
   fkRefs: Record<string, string>
-  [key: string]: unknown
 }
 
 export interface EnumUsageRef {
@@ -18,23 +20,28 @@ export interface EnumUsageRef {
   field: string
 }
 
-export interface EnumNodeData {
+export type EnumNodeData = {
   kind: "enum"
   enumDef: Enum
   /** Tables/fields that reference this enum by type name. */
   usages: EnumUsageRef[]
-  [key: string]: unknown
 }
 
 export type DiagramNodeData = TableNodeData | EnumNodeData
 
-export interface RelationEdgeData {
+export type RelationEdgeData = {
   relation: Relation
+  /** Precomputed hover label (e.g. "Post To User"). */
+  label: string | null
   points?: LayoutPoint[]
   useFieldHandles?: boolean
   /** Row index of the anchored field in the source table, if known. */
   fromFieldIndex?: number
   /** Row index of the anchored field in the target table, if known. */
   toFieldIndex?: number
-  [key: string]: unknown
 }
+
+export type TableFlowNode = Node<TableNodeData, typeof NodeKind.TABLE>
+export type EnumFlowNode = Node<EnumNodeData, typeof NodeKind.ENUM>
+export type DiagramFlowNode = TableFlowNode | EnumFlowNode
+export type RelationFlowEdge = Edge<RelationEdgeData, typeof EdgeKind.RELATION>

@@ -25,7 +25,7 @@ import {
 } from "../../lib/diagram-display.js"
 import { getConnectedIds } from "../../lib/focus-utils.js"
 import { useDiagramStore } from "../../store/diagram-store.js"
-import type { DiagramNodeData } from "../../types/flow-types.js"
+import type { DiagramFlowNode } from "../../types/flow-types.js"
 import { useTheme } from "../theme-provider.js"
 import { edgeTypes, nodeTypes } from "./node-types.js"
 
@@ -135,12 +135,11 @@ function SchemaCanvasInner() {
     return () => cancelAnimationFrame(frame)
   }, [fitView, focusedEntityId, getZoom, query, setZoom])
 
-  const onNodeClick: NodeMouseHandler = useCallback(
+  const onNodeClick: NodeMouseHandler<DiagramFlowNode> = useCallback(
     (_event, node) => {
       setSelectedEdgeId(null)
-      const data = node.data as DiagramNodeData
-      if (data.kind === "entity") {
-        setFocusedEntityId(node.id)
+      if (node.data.kind === "entity") {
+        setFocusedEntityId(node.data.entity.id)
       }
     },
     [setFocusedEntityId, setSelectedEdgeId]
@@ -150,7 +149,7 @@ function SchemaCanvasInner() {
     setSelectedEdgeId(null)
   }, [setSelectedEdgeId])
 
-  const onNodeDragStop: OnNodeDrag = useCallback(
+  const onNodeDragStop: OnNodeDrag<DiagramFlowNode> = useCallback(
     (_event, node) => {
       setManualPosition(node.id, node.position)
     },

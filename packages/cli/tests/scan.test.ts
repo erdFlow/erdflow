@@ -37,7 +37,7 @@ test("resolveSchemaSource expands multi-file prisma schema directory", async () 
   await mkdir(schemaDir, { recursive: true })
   await writeFile(
     join(schemaDir, "a.prisma"),
-    "generator client { provider = \"prisma-client-js\" }\ndatasource db { provider = \"postgresql\" url = env(\"DATABASE_URL\") }"
+    'generator client { provider = "prisma-client-js" }\ndatasource db { provider = "postgresql" url = env("DATABASE_URL") }'
   )
   await writeFile(join(schemaDir, "b.prisma"), "model User { id Int @id }")
 

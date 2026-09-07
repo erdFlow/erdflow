@@ -23,9 +23,8 @@ import {
   cardinalitySymbols,
   nodeBox,
 } from "../../lib/edge-geometry.js"
-import { formatRelationLabel } from "../../lib/format-relation.js"
 import { useDiagramStore } from "../../store/diagram-store.js"
-import type { RelationEdgeData } from "../../types/flow-types.js"
+import type { RelationFlowEdge } from "../../types/flow-types.js"
 
 function EndpointBadge({
   x,
@@ -67,14 +66,14 @@ function RelationEdgeComponent({
   data,
   markerEnd,
   style,
-}: EdgeProps) {
-  const edgeData = data as RelationEdgeData | undefined
+}: EdgeProps<RelationFlowEdge>) {
+  const edgeData = data
   const sourceBox = nodeBox(useInternalNode(source))
   const targetBox = nodeBox(useInternalNode(target))
   const [hovered, setHovered] = useState(false)
-  const selectedEdgeId = useDiagramStore((state) => state.selectedEdgeId)
+  const isSelected = useDiagramStore((state) => state.selectedEdgeId === id)
   const setSelectedEdgeId = useDiagramStore((state) => state.setSelectedEdgeId)
-  const isActive = hovered || selectedEdgeId === id
+  const isActive = hovered || isSelected
 
   let routedPath: string
   let labelX = (sourceX + targetX) / 2
@@ -136,14 +135,10 @@ function RelationEdgeComponent({
     })
   }
 
-  const schema = useDiagramStore((state) => state.schema)
   const symbols = edgeData?.relation
     ? cardinalitySymbols(edgeData.relation.cardinality)
     : null
-  const relationLabel =
-    edgeData?.relation && schema
-      ? formatRelationLabel(edgeData.relation, schema.entities)
-      : (edgeData?.relation?.name ?? null)
+  const relationLabel = edgeData?.label ?? edgeData?.relation?.name ?? null
   const opacity = typeof style?.opacity === "number" ? style.opacity : 1
   const isDimmed = opacity < 1
 

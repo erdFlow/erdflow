@@ -14,7 +14,10 @@ import {
 const fixtureDir = join(dirname(fileURLToPath(import.meta.url)), "../fixtures")
 
 test("detectPrismaProject finds config-driven and multi-file layouts", async () => {
-  assert.equal(await detectPrismaProject(join(fixtureDir, "v7-multifile")), true)
+  assert.equal(
+    await detectPrismaProject(join(fixtureDir, "v7-multifile")),
+    true
+  )
   assert.equal(
     await detectPrismaProject(join(fixtureDir, "v7-config-custom")),
     true

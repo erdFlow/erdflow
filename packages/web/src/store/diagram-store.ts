@@ -2,12 +2,14 @@ import { ENTITY_HEADER_HEIGHT } from "@erdflow/layout"
 import { applyNodeChanges } from "@xyflow/react"
 import { create } from "zustand"
 import {
+  NodeKind,
   SQL_VIEW_WIDTH_DEFAULT,
   SQL_VIEW_WIDTH_MAX,
   SQL_VIEW_WIDTH_MIN,
 } from "../data/constants.js"
 import { mergeSchemaUpdate } from "../lib/merge-schema.js"
 import type { DiagramState } from "../types/diagram-store.js"
+import type { DiagramFlowNode, TableFlowNode } from "../types/flow-types.js"
 
 function clampSqlViewWidth(width: number): number {
   return Math.min(SQL_VIEW_WIDTH_MAX, Math.max(SQL_VIEW_WIDTH_MIN, width))
@@ -73,18 +75,19 @@ export const useDiagramStore = create<DiagramState>((set, get) => ({
   toggleTableCollapsed: (entityId) =>
     set((state) => {
       const collapsed = !(state.collapsedTables[entityId] ?? false)
-      const collapsedTables = {
+      const collapsedTables: DiagramState["collapsedTables"] = {
         ...state.collapsedTables,
         [entityId]: collapsed,
       }
 
-      const nodes = state.nodes.map((node) => {
+      const nodes: DiagramFlowNode[] = state.nodes.map((node) => {
         if (node.id !== entityId || node.data.kind !== "entity") {
           return node
         }
 
-        return {
+        const next: TableFlowNode = {
           ...node,
+          type: NodeKind.TABLE,
           data: {
             ...node.data,
             collapsed,
@@ -94,12 +97,15 @@ export const useDiagramStore = create<DiagramState>((set, get) => ({
             height: collapsed ? ENTITY_HEADER_HEIGHT : node.style?.height,
           },
         }
+        return next
       })
 
       return { collapsedTables, nodes }
     }),
   onNodesChange: (changes) =>
-    set((state) => ({ nodes: applyNodeChanges(changes, state.nodes) })),
+    set((state) => ({
+      nodes: applyNodeChanges(changes, state.nodes) as DiagramState["nodes"],
+    })),
   setManualPosition: (nodeId, position) =>
     set((state) => ({
       manualPositions: {

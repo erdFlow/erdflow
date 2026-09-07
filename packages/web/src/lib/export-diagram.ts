@@ -1,5 +1,5 @@
-import { getNodesBounds, getViewportForBounds } from "@xyflow/react"
 import type { UniversalSchema } from "@erdflow/core"
+import { getNodesBounds, getViewportForBounds } from "@xyflow/react"
 import { toPng, toSvg } from "html-to-image"
 import { useDiagramStore } from "../store/diagram-store.js"
 
@@ -97,8 +97,7 @@ async function captureOptions(backgroundColor: string): Promise<{
 function dataUrlToBlob(dataUrl: string): Blob {
   const [header, data = ""] = dataUrl.split(",")
   const isBase64 = header?.includes("base64")
-  const mime =
-    header?.match(/data:([^;]+)/)?.[1] ?? "application/octet-stream"
+  const mime = header?.match(/data:([^;]+)/)?.[1] ?? "application/octet-stream"
   const binary = isBase64 ? atob(data) : decodeURIComponent(data)
   const bytes = new Uint8Array(binary.length)
   for (let i = 0; i < binary.length; i += 1) {

@@ -12,6 +12,15 @@ export type RelationCardinality = "one-to-one" | "one-to-many" | "many-to-many"
 
 export type ConstraintKind = "primary_key" | "foreign_key" | "unique" | "check"
 
+export type ReferentialAction =
+  | "CASCADE"
+  | "SET NULL"
+  | "RESTRICT"
+  | "NO ACTION"
+  | "SET DEFAULT"
+
+export type SqlDialect = "postgresql" | "mysql" | "sqlite"
+
 export interface FieldType {
   name: string
   native?: string
@@ -54,8 +63,8 @@ export interface Relation {
   from: RelationEndpoint
   to: RelationEndpoint
   cardinality: RelationCardinality
-  onDelete?: string
-  onUpdate?: string
+  onDelete?: ReferentialAction
+  onUpdate?: ReferentialAction
 }
 
 export interface Index {
@@ -66,15 +75,28 @@ export interface Index {
   unique: boolean
 }
 
-export interface Constraint {
-  id: ConstraintId
-  kind: ConstraintKind
-  entityId: EntityId
-  fieldIds: FieldId[]
-  expression?: string
-  referencedEntityId?: EntityId
-  referencedFieldIds?: FieldId[]
-}
+export type Constraint =
+  | {
+      id: ConstraintId
+      kind: "primary_key" | "unique"
+      entityId: EntityId
+      fieldIds: FieldId[]
+    }
+  | {
+      id: ConstraintId
+      kind: "foreign_key"
+      entityId: EntityId
+      fieldIds: FieldId[]
+      referencedEntityId: EntityId
+      referencedFieldIds: FieldId[]
+    }
+  | {
+      id: ConstraintId
+      kind: "check"
+      entityId: EntityId
+      fieldIds: FieldId[]
+      expression: string
+    }
 
 export interface SchemaMeta {
   source?: string
@@ -92,4 +114,26 @@ export interface UniversalSchema {
   indexes: Index[]
   constraints: Constraint[]
   meta?: SchemaMeta
+}
+
+const REFERENTIAL_ACTIONS = new Set<string>([
+  "CASCADE",
+  "SET NULL",
+  "RESTRICT",
+  "NO ACTION",
+  "SET DEFAULT",
+])
+
+/** Normalize parser/DBML action strings to the shared union. */
+export function normalizeReferentialAction(
+  value: string | undefined | null
+): ReferentialAction | undefined {
+  if (!value) {
+    return undefined
+  }
+  const normalized = value.trim().toUpperCase().replace(/_/g, " ")
+  if (REFERENTIAL_ACTIONS.has(normalized)) {
+    return normalized as ReferentialAction
+  }
+  return undefined
 }

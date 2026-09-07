@@ -1,8 +1,8 @@
-import type { UniversalSchema } from "@erdflow/core"
+import type { EntityId, UniversalSchema } from "@erdflow/core"
 
 export function getConnectedIds(
   schema: UniversalSchema,
-  entityId: string
+  entityId: EntityId
 ): { nodeIds: Set<string>; edgeIds: Set<string> } {
   const nodeIds = new Set<string>([entityId])
   const edgeIds = new Set<string>()

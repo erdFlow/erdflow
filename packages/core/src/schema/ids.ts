@@ -1,5 +1,6 @@
 import type {
   ConstraintId,
+  ConstraintKind,
   EntityId,
   EnumId,
   FieldId,
@@ -38,7 +39,7 @@ export function createIndexId(entityName: string, indexName: string): IndexId {
 
 export function createConstraintId(
   entityName: string,
-  kind: string,
+  kind: ConstraintKind,
   fieldNames: string[]
 ): ConstraintId {
   const fields = fieldNames.map(normalize).join(",")

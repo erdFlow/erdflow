@@ -1,4 +1,6 @@
-export type SqlDialect = "postgresql" | "mysql" | "sqlite"
+import type { SqlDialect } from "@erdflow/core"
+
+export type { SqlDialect }
 
 export function inferSqlDialect(sql: string): SqlDialect {
   const normalized = sql.toLowerCase()

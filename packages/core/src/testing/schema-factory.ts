@@ -36,7 +36,9 @@ function tableEntity(
  */
 export function createSizedSchema(entityCount: number): UniversalSchema {
   if (!Number.isInteger(entityCount) || entityCount < 1) {
-    throw new Error(`entityCount must be a positive integer, got ${entityCount}`)
+    throw new Error(
+      `entityCount must be a positive integer, got ${entityCount}`
+    )
   }
 
   const entities: Entity[] = []

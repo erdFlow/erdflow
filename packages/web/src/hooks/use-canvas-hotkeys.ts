@@ -9,7 +9,6 @@ import { useDiagramStore } from "../store/diagram-store.js"
 
 /** Register canvas zoom / focus shortcuts (ignored while typing in inputs). */
 export function useCanvasHotkeys() {
-  const canvasControls = useDiagramStore((state) => state.canvasControls)
   const clearFocus = useDiagramStore((state) => state.clearFocus)
 
   useHotkeys(
@@ -17,19 +16,19 @@ export function useCanvasHotkeys() {
       {
         hotkey: HOTKEY_ZOOM_IN,
         callback: () => {
-          canvasControls?.zoomIn()
+          useDiagramStore.getState().canvasControls?.zoomIn()
         },
       },
       {
         hotkey: HOTKEY_ZOOM_OUT,
         callback: () => {
-          canvasControls?.zoomOut()
+          useDiagramStore.getState().canvasControls?.zoomOut()
         },
       },
       {
         hotkey: HOTKEY_FIT_VIEW,
         callback: () => {
-          canvasControls?.fitView()
+          useDiagramStore.getState().canvasControls?.fitView()
         },
       },
       {
