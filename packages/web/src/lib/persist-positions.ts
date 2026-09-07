@@ -91,3 +91,8 @@ export function saveManualPositions(
     // ignore quota / private mode
   }
 }
+
+/** Drop stored positions for a schema (Clear cache). */
+export function clearManualPositions(schemaKey: string): void {
+  saveManualPositions(schemaKey, {})
+}

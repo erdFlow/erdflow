@@ -52,6 +52,8 @@ export interface DiagramState {
   toggleTableCollapsed: (entityId: EntityId) => void
   onNodesChange: (changes: NodeChange<DiagramFlowNode>[]) => void
   setManualPosition: (nodeId: string, position: LayoutPoint) => void
+  /** Clear saved positions and re-layout to initial auto-layout. */
+  clearPositionCache: () => Promise<void>
   setCanvasControls: (controls: CanvasControls | null) => void
   clearFocus: () => void
 }

@@ -5,6 +5,7 @@ import {
   MANUAL_POSITIONS_TTL_MS,
 } from "../../src/data/constants.js"
 import {
+  clearManualPositions,
   loadManualPositions,
   positionsSchemaKey,
   saveManualPositions,
@@ -69,4 +70,12 @@ test("loadManualPositions drops expired entries", () => {
 
 test("TTL constant is seven days", () => {
   assert.equal(MANUAL_POSITIONS_TTL_MS, 7 * 24 * 60 * 60 * 1000)
+})
+
+test("clearManualPositions removes stored entry", () => {
+  installLocalStorageMock()
+  const key = "clear:schema"
+  saveManualPositions(key, { "entity:user": { x: 3, y: 4 } })
+  clearManualPositions(key)
+  assert.deepEqual(loadManualPositions(key), {})
 })

@@ -20,6 +20,7 @@ import {
   MinusIcon,
   MoreVerticalIcon,
   PlusIcon,
+  Trash2Icon,
 } from "lucide-react"
 import {
   BRAND_NAME,
@@ -29,6 +30,7 @@ import {
   HOTKEY_ZOOM_OUT,
 } from "../../data/constants.js"
 import {
+  CLEAR_CACHE_LABEL,
   SETTINGS_LABEL,
   SHOW_MINIMAP_LABEL,
   SHOW_RELATIONSHIP_TABLE_LABEL,
@@ -107,6 +109,9 @@ export function Header() {
     (state) => state.setShowRelationshipTable
   )
   const clearFocus = useDiagramStore((state) => state.clearFocus)
+  const clearPositionCache = useDiagramStore(
+    (state) => state.clearPositionCache
+  )
   const setShowRelations = useDiagramStore((state) => state.setShowRelations)
   const { theme, setTheme } = useTheme()
 
@@ -192,6 +197,17 @@ export function Header() {
                     />
                   </DropdownMenuSubContent>
                 </DropdownMenuSub>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  textValue={CLEAR_CACHE_LABEL}
+                  isDisabled={!schema}
+                  onAction={() => {
+                    void clearPositionCache()
+                  }}
+                >
+                  <Trash2Icon />
+                  {CLEAR_CACHE_LABEL}
+                </DropdownMenuItem>
               </DropdownMenuSubContent>
             </DropdownMenuSub>
 

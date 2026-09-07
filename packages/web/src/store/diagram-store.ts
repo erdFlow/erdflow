@@ -1,4 +1,4 @@
-import { ENTITY_HEADER_HEIGHT } from "@erdflow/layout"
+import { ENTITY_HEADER_HEIGHT, layoutSchema } from "@erdflow/layout"
 import { applyNodeChanges } from "@xyflow/react"
 import { create } from "zustand"
 import {
@@ -9,10 +9,12 @@ import {
 } from "../data/constants.js"
 import { mergeSchemaUpdate } from "../lib/merge-schema.js"
 import {
+  clearManualPositions,
   loadManualPositions,
   positionsSchemaKey,
   saveManualPositions,
 } from "../lib/persist-positions.js"
+import { schemaToFlow } from "../lib/schema-to-flow.js"
 import type { DiagramState } from "../types/diagram-store.js"
 import type { DiagramFlowNode, TableFlowNode } from "../types/flow-types.js"
 
@@ -146,6 +148,33 @@ export const useDiagramStore = create<DiagramState>((set, get) => ({
         ),
       }
     }),
+  clearPositionCache: async () => {
+    const state = get()
+    const schema = state.schema
+    if (!schema) {
+      return
+    }
+
+    clearManualPositions(schemaPositionsKey(schema))
+    const layout = await layoutSchema(schema, { useCache: false })
+    const graph = schemaToFlow({
+      schema,
+      layout,
+      manualPositions: {},
+      collapsedTables: state.collapsedTables,
+    })
+
+    set({
+      manualPositions: {},
+      nodes: graph.nodes,
+      edges: graph.edges,
+      selectedEdgeId: null,
+    })
+
+    queueMicrotask(() => {
+      get().canvasControls?.fitView()
+    })
+  },
   setCanvasControls: (canvasControls) => set({ canvasControls }),
   clearFocus: () => set({ focusedEntityId: null, selectedEdgeId: null }),
 }))
